@@ -1,0 +1,20 @@
+# CI overlay for docker-compose. This file is used to override the default docker-compose.yml file in CI
+
+services:
+
+  jmeros-postgresql-db:
+    ports: !reset [ ]
+    labels:
+      org.springframework.boot.ignore: true
+
+  jmeros-broker:
+    ports: !reset [ ]
+
+  jmeros-schema-registry:
+    ports: !reset [ ]
+
+networks:
+  default:
+    external: true
+    # Network is created by the CI job and includes the test runner & the containers started by this compose file
+    name: ${COMPOSE_PROJECT_NAME}_default

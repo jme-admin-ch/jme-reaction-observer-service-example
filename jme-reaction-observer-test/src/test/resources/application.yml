@@ -1,0 +1,34 @@
+spring:
+  application:
+    name: jme-reaction-observer-it
+  main:
+    banner-mode: off
+  # jeap-reaction-observer-service-test pulls in jeap-reaction-observer-domain for its event builders and
+  # domain model classes. Its DomainConfiguration unconditionally registers ReactionGraphBuilderService,
+  # which needs a JPA-backed ReactionGraphRepository - irrelevant here since this companion context only
+  # produces Kafka messages, and has no datasource of its own.
+  autoconfigure:
+    exclude:
+      - ch.admin.bit.jeap.reaction.observer.domain.DomainConfiguration
+  docker:
+    compose:
+      enabled: true
+      file: ../docker/docker-compose.yml
+      lifecycle-management: start-and-stop
+      skip:
+        in-tests: false
+      arguments:
+        - "--project-name=${COMPOSE_PROJECT_NAME:jme-reaction-observer-it}"
+      readiness:
+        timeout: 60s
+
+jeap:
+  messaging:
+    kafka:
+      bootstrapServers: "http://localhost:9092"
+      schemaRegistryUrl: "http://localhost:7781"
+      username: user
+      password: user-secret
+      securityProtocol: SASL_PLAINTEXT
+      systemName: jme
+      serviceName: jme-reaction-observer-it

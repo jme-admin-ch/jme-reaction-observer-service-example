@@ -1,0 +1,41 @@
+publiccodeYmlVersion: 0.5.0
+name: jme-reaction-observer-service
+applicationSuite: JME
+softwareVersion: 1.0.0
+releaseDate: 2026-07-20
+url: "https://github.com/jme-admin-ch/jme-reaction-observer-service.git"
+landingURL: "https://github.com/jme-admin-ch/jme"
+platforms:
+  - web
+categories:
+  - application-development
+developmentStatus: stable
+softwareType: standalone/backend
+organisation:
+  uri: https://ld.admin.ch/office/V.1.7
+  name: Federal Office of Information Technology, Systems and Telecommunication
+description:
+  en:
+    localisedName: jme-reaction-observer-service
+    shortDescription: Example project demonstrating how to instantiate the jEAP Reaction Observer Service.
+    longDescription: >
+      The jEAP Reaction Observer Service consumes the reaction events published by the jEAP Reaction
+      Observer Library (embedded in each microservice) and aggregates them into a queryable model of
+      how services react to incoming messages. It is delivered as a jEAP product
+      (jeap-reaction-observer-service-instance) that development teams instantiate per environment.
+      This repository provides an example of how to set up and configure a Reaction Observer Service
+      instance for local development.
+    features:
+      - Demonstrates instantiation and configuration of the jEAP Reaction Observer Service
+      - Provides Docker Compose setup for local development (PostgreSQL and Kafka)
+legal:
+  license: Apache-2.0
+maintenance:
+  type: internal
+  contacts:
+    - name: Federal Office of Information Technology, Systems and Telecommunication FOITT
+      email: jeap-community@bit.admin.ch
+localisation:
+  localisationReady: false
+  availableLanguages:
+    - en

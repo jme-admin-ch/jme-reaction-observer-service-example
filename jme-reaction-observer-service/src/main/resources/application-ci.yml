@@ -1,0 +1,10 @@
+spring:
+  datasource:
+    url: "jdbc:postgresql://jmeros-postgresql-db:5432/reaction-observer-db"
+
+jeap:
+  messaging:
+    kafka:
+      bootstrapServers: "broker:29092"
+      schemaRegistryUrl: "http://schema-registry:8081"
+      securityProtocol: PLAINTEXT

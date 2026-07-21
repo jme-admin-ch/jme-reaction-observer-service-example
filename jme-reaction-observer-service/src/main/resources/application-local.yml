@@ -1,0 +1,20 @@
+spring:
+  datasource:
+    type: com.zaxxer.hikari.HikariDataSource
+    driver-class-name: org.postgresql.Driver
+    url: "jdbc:postgresql://localhost:5433/reaction-observer-db"
+    username: db-user
+    password: db-pass
+    hikari:
+      schema: ${spring.jpa.properties.hibernate.default_schema}
+
+jeap:
+  messaging:
+    kafka:
+      bootstrapServers: "http://localhost:9092"
+      schemaRegistryUrl: "http://localhost:7781"
+      username: user
+      password: user-secret
+      securityProtocol: SASL_PLAINTEXT
+      system-name: jme
+      error-topic-name: jme-messageprocessing-failed

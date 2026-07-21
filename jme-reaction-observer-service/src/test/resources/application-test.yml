@@ -1,0 +1,15 @@
+spring:
+  datasource:
+    url: "jdbc:h2:mem:test;MODE=PostgreSQL"
+    username: sa
+    password: password
+    driverClassName: org.h2.Driver
+
+logging:
+  level:
+    ch.admin.bit.jeap.reaction.observer: DEBUG
+    org: WARN
+    kafka: ERROR
+    state.change.logger: WARN
+    ch.admin.bit.jeap.messaging.kafka.serde.confluent.config: WARN
+    io.confluent.kafka.serializers: WARN

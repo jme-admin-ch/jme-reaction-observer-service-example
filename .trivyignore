@@ -1,0 +1,7 @@
+# commons-io 2.11.0 coming from spring-kafka-test and au.com.dius.pact.consumer:junit5 and it's not fixed in the newest versions
+# Since this are only test dependencies, the risk is accepted.
+CVE-2024-47554
+
+# com.google.protobuf:protobuf-parent 3.21.12 coming from au.com.dius.pact.consumer:junit5
+# Since this is only a test dependency, the risk is accepted.
+CVE-2024-7254

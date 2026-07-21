@@ -1,0 +1,11 @@
+---
+services:
+  jmeros-postgresql-db:
+    image: postgres:17.7
+    container_name: jmeros-postgresql-db
+    ports:
+      - "5433:5432"
+    environment:
+      - POSTGRES_USER=db-user
+      - POSTGRES_PASSWORD=db-pass
+      - POSTGRES_DB=reaction-observer-db

@@ -1,0 +1,13 @@
+target/
+
+*.class
+*.log
+*.versionsBackup
+
+*.iws
+*.iml
+*.ipr
+.idea/
+
+hs_err_pid*
+replay_pid*

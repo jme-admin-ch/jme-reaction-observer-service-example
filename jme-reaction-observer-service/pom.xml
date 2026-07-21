@@ -58,19 +58,6 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>au.com.dius.pact.provider</groupId>
-            <artifactId>junit5</artifactId>
-            <scope>test</scope>
-            <exclusions>
-                <!-- The protobuf version in junit is old and contains vulnerabilties -->
-                <!-- Without an exclusion, it will override the version from jeap-messaging -->
-                <exclusion>
-                    <groupId>io.grpc</groupId>
-                    <artifactId>grpc-protobuf</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-        <dependency>
             <groupId>com.h2database</groupId>
             <artifactId>h2</artifactId>
             <scope>test</scope>

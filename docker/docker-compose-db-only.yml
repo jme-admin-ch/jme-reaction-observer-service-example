@@ -1,7 +1,7 @@
 ---
 services:
   jmeros-postgresql-db:
-    image: postgres:17.7
+    image: postgres:17.10
     container_name: jmeros-postgresql-db
     ports:
       - "5433:5432"

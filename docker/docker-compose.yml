@@ -43,7 +43,7 @@ services:
       - jmeros-broker
 
   jmeros-schema-registry:
-    image: confluentinc/cp-schema-registry:7.5.0
+    image: confluentinc/cp-schema-registry:8.3.0
     hostname: schema-registry
     depends_on:
       - jmeros-broker

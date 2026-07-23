@@ -5,13 +5,13 @@
     <parent>
         <groupId>ch.admin.bit.jeap</groupId>
         <artifactId>jeap-reaction-observer-service-instance</artifactId>
-        <version>5.5.0</version>
+        <version>6.2.0</version>
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
 
     <artifactId>jme-reaction-observer-service</artifactId>
     <groupId>ch.admin.bit.jeap.jme.reactionobserver</groupId>
-    <version>1.0.0-SNAPSHOT</version>
+    <version>2.0.0-SNAPSHOT</version>
     <description>
         JME example instance of the jEAP Reaction Observer Service
     </description>
@@ -24,7 +24,7 @@
         <dependency>
             <groupId>commons-io</groupId>
             <artifactId>commons-io</artifactId>
-            <version>2.19.0</version>
+            <version>2.22.0</version>
         </dependency>
         <dependency>
             <groupId>ch.admin.bit.jeap</groupId>

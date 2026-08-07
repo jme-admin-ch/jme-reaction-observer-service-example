@@ -10,7 +10,7 @@ services:
       - POSTGRES_DB=reaction-observer-db
 
   jmeros-broker:
-    image: confluentinc/cp-kafka:8.3.0
+    image: confluentinc/cp-kafka:8.3.1
     hostname: broker
     ports:
       - "9092:9092"
@@ -37,13 +37,13 @@ services:
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
 
   jmeros-broker_init:
-    image: confluentinc/cp-kafka:8.3.0
+    image: confluentinc/cp-kafka:8.3.1
     command: "kafka-configs --bootstrap-server broker:29092 --alter --add-config 'SCRAM-SHA-512=[password=user-secret]' --entity-type users --entity-name user"
     depends_on:
       - jmeros-broker
 
   jmeros-schema-registry:
-    image: confluentinc/cp-schema-registry:8.3.0
+    image: confluentinc/cp-schema-registry:8.3.1
     hostname: schema-registry
     depends_on:
       - jmeros-broker

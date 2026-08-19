@@ -11,7 +11,7 @@
 
     <artifactId>jme-reaction-observer-service</artifactId>
     <groupId>ch.admin.bit.jeap.jme.reactionobserver</groupId>
-    <version>5.1.0-SNAPSHOT</version>
+    <version>5.2.0-SNAPSHOT</version>
     <description>
         JME example instance of the jEAP Reaction Observer Service
     </description>

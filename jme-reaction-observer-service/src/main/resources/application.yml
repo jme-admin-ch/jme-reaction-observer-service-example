@@ -29,6 +29,19 @@ jeap:
   web.tls.enabled: false
   swagger:
     status: open
+  security:
+    oauth2:
+      resourceserver:
+        # Required as of jeap-reaction-observer-service 11.0.0: the service refuses to start without an
+        # authorization server and a system name, because its API is authenticated with HTTP Basic and with
+        # bearer tokens and both have to work. This example points at a local jEAP OAuth mock server
+        # (jeap-oauth-mock-server, port 8180 by default); since the JWKS is only fetched once a request
+        # actually carries a bearer token, the service starts - and the HTTP Basic users below keep working -
+        # with no mock running at all.
+        system-name: jme
+        authorization-server:
+          issuer: "http://localhost:8180"
+          jwk-set-uri: "http://localhost:8180/.well-known/jwks.json"
   reaction:
     observer:
       service:

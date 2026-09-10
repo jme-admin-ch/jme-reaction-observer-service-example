@@ -74,6 +74,19 @@ The service consumes the `jme-reaction-identified` and `jme-reactions-observed` 
 by services in the JME example system that embed the jEAP Reaction Observer Library, for example the
 [JME messaging example](https://github.com/jme-admin-ch/jme-messaging-example).
 
+### Security
+
+The REST API is authenticated with HTTP Basic **and** with bearer tokens, and the Reaction Observer Service
+requires both to be configured - an instance without an authorization server and a system name refuses to
+start. This example configures the two in-memory HTTP Basic users (`read` / `secret` and `write` / `secret`)
+and points `jeap.security.oauth2.resourceserver.authorization-server` at a
+[jEAP OAuth mock server](https://github.com/jeap-admin-ch/jeap-oauth-mock-server) on `localhost:8180`.
+
+The mock server does not have to be running: its JWKS is only fetched once a request actually carries a
+bearer token, so the local run and the integration tests work over HTTP Basic alone. Start a mock server if
+you want to call the API with a token, which is then authorized by the semantic role `jme_@reactions_#read`
+(or `..._#write`).
+
 ## Profiles
 
 * **application-local**: Contains all configurations for running the application locally (local PostgreSQL and Kafka).

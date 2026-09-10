@@ -7,6 +7,13 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [9.0.0] - 2026-09-09
 
+### Changed
+- The service now configures an authorization server and a system name
+  (`jeap.security.oauth2.resourceserver.*`), which jeap-reaction-observer-service requires as of 11.0.0 - an
+  instance without them refuses to start. The issuer points at a local jEAP OAuth mock server; the JWKS is
+  only fetched once a request carries a bearer token, so the local run and the integration tests keep working
+  over HTTP Basic with no mock running.
+
 ### Dependencies
 - **ch.admin.bit.jeap:jeap-spring-boot-parent**: 40.10.1 → 40.11.0 (minor)
 - **ch.admin.bit.jeap:jeap-reaction-observer-service-instance**: 10.3.0 → 11.1.0 (major)

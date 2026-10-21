@@ -331,6 +331,7 @@ Apache License Version 2.0
  * AWS Java SDK :: Checksums SPI - [software.amazon.awssdk:checksums-spi](https://aws.amazon.com/sdkforjava)
  * AWS Java SDK :: Endpoints SPI - [software.amazon.awssdk:endpoints-spi](https://aws.amazon.com/sdkforjava/core/endpoints-spi)
  * AWS Java SDK :: Endpoints SPI - [software.amazon.awssdk:endpoints-spi](https://aws.amazon.com/sdkforjava/core/endpoints-spi)
+ * AWS Java SDK :: EventStream - [software.amazon.awssdk:eventstream](https://aws.amazon.com/sdkforjava)
  * AWS Java SDK :: Services :: AWS Glue - [software.amazon.awssdk:glue](https://aws.amazon.com/sdkforjava)
  * AWS Java SDK :: Services :: AWS Glue - [software.amazon.awssdk:glue](https://aws.amazon.com/sdkforjava)
  * AWS Java SDK :: HTTP Auth - [software.amazon.awssdk:http-auth](https://aws.amazon.com/sdkforjava)
@@ -389,6 +390,7 @@ Apache License Version 2.0
 BSD 2-Clause License
 -------------------------------
 
+ * zstd-jni - [com.github.luben:zstd-jni](https://github.com/luben/zstd-jni)
  * zstd-jni - [com.github.luben:zstd-jni](https://github.com/luben/zstd-jni)
  * HdrHistogram - [org.hdrhistogram:HdrHistogram](http://hdrhistogram.github.io/HdrHistogram/)
  * PostgreSQL JDBC Driver - [org.postgresql:postgresql](https://jdbc.postgresql.org)

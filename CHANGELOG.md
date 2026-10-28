@@ -7,6 +7,11 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [13.15.0] - 2026-10-28
 
+### Changed
+- The REST API is called with OAuth2 bearer tokens of the new OAuth mock server module
+  `jme-reaction-observer-auth-scs`, because jeap-reaction-observer-service 12.14.0 removed HTTP Basic
+  authentication. The HTTP Basic users are removed from the configuration.
+
 ### Dependencies
 - **ch.admin.bit.jeap:jeap-spring-boot-parent**: 41.24.0 → 41.27.0 (minor)
 - **ch.admin.bit.jeap:jeap-reaction-observer-service-instance**: 12.13.0 → 12.16.0 (minor)

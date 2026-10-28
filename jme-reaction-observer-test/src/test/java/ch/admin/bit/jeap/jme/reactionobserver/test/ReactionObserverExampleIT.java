@@ -10,6 +10,7 @@ import ch.admin.bit.jeap.reaction.observer.service.test.ReactionsObservedEventBu
 import ch.admin.bit.jeap.reaction.observer.service.test.model.TestObservation;
 import ch.admin.bit.jeap.reaction.observer.service.test.model.TestReaction;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.kafka.core.KafkaTemplate;
@@ -29,22 +30,33 @@ import static org.awaitility.Awaitility.await;
  * Starts the real, packaged jme-reaction-observer-service against the docker-compose infrastructure
  * (real PostgreSQL and Kafka), publishes real ReactionIdentifiedEvent / ReactionsObservedEvent messages on
  * Kafka - exactly as the jEAP Reaction Observer Library would from another service - and verifies the data
- * becomes visible through the service's own, HTTP-Basic-secured REST API.
+ * becomes visible through the service's own REST API, with tokens of the OAuth mock server
+ * (jme-reaction-observer-auth-scs).
  */
 class ReactionObserverExampleIT extends BootServiceSpringIntegrationTestBase {
 
-    private static final String BASE_URL = "http://localhost:8080/jme-reaction-observer-service";
-    private static final String READ_USER = "read";
-    private static final String READ_PASSWORD = "secret";
-    private static final String WRITE_USER = "write";
-    private static final String WRITE_PASSWORD = "secret";
+    private static final List<Integer> SERVICE_PORTS = reserveFreePorts(2);
+    private static final int AUTH_PORT = SERVICE_PORTS.getFirst();
+    private static final int SERVICE_PORT = SERVICE_PORTS.get(1);
+    private static final String AUTH_BASE_URL = "http://localhost:" + AUTH_PORT + "/jme-reaction-observer-auth-scs";
+    private static final String BASE_URL = "http://localhost:" + SERVICE_PORT + "/jme-reaction-observer-service";
 
     @Autowired
     private KafkaTemplate<AvroMessageKey, AvroMessage> kafkaTemplate;
 
+    private String readToken;
+    private String writeToken;
+
     @BeforeAll
     static void startServices() throws Exception {
-        startService("jme-reaction-observer-service", BASE_URL);
+        startService("jme-reaction-observer-auth-scs", AUTH_BASE_URL, Map.of(
+                "server.port", String.valueOf(AUTH_PORT),
+                "mockserver.base-url", AUTH_BASE_URL));
+        startService("jme-reaction-observer-service", BASE_URL, Map.of(
+                "server.port", String.valueOf(SERVICE_PORT),
+                "jeap.security.oauth2.resourceserver.authorization-server.issuer", AUTH_BASE_URL,
+                "jeap.security.oauth2.resourceserver.authorization-server.jwk-set-uri",
+                AUTH_BASE_URL + "/.well-known/jwks.json"));
 
         // The health check above only confirms the HTTP server and database are up - it says nothing about
         // whether the Kafka consumer group has finished its initial rebalance. Since these consumers use the
@@ -52,6 +64,12 @@ class ReactionObserverExampleIT extends BootServiceSpringIntegrationTestBase {
         // the rebalance completes would be silently skipped forever.
         KafkaConsumerGroupAwaiter.waitForAssignment("jme-reaction-observer-service", "jme-reaction-identified");
         KafkaConsumerGroupAwaiter.waitForAssignment("jme-reaction-observer-service", "jme-reactions-observed");
+    }
+
+    @BeforeEach
+    void fetchTokens() {
+        readToken = fetchAccessToken(AUTH_BASE_URL, "jme-reaction-observer-reader", "secret");
+        writeToken = fetchAccessToken(AUTH_BASE_URL, "jme-reaction-observer-operator", "secret");
     }
 
     @Test
@@ -112,27 +130,27 @@ class ReactionObserverExampleIT extends BootServiceSpringIntegrationTestBase {
     }
 
     private List<String> getSystemNames() {
-        return given().baseUri(BASE_URL).basePath("/api").auth().preemptive().basic(READ_USER, READ_PASSWORD)
+        return given().baseUri(BASE_URL).basePath("/api").auth().oauth2(readToken)
                 .when().get("/systems/names")
                 .then().statusCode(200)
                 .extract().jsonPath().getList("$", String.class);
     }
 
     private List<String> getComponentNames() {
-        return given().baseUri(BASE_URL).basePath("/api").auth().preemptive().basic(READ_USER, READ_PASSWORD)
+        return given().baseUri(BASE_URL).basePath("/api").auth().oauth2(readToken)
                 .when().get("/components/names")
                 .then().statusCode(200)
                 .extract().jsonPath().getList("$", String.class);
     }
 
     private void triggerAggregation(String date) {
-        given().baseUri(BASE_URL).basePath("/api").auth().preemptive().basic(WRITE_USER, WRITE_PASSWORD)
+        given().baseUri(BASE_URL).basePath("/api").auth().oauth2(writeToken)
                 .when().get("/management/aggregate-data/{date}", date)
                 .then().statusCode(200);
     }
 
     private Map<String, String> getLastObservationDatePerComponent() {
-        return given().baseUri(BASE_URL).basePath("/api").auth().preemptive().basic(READ_USER, READ_PASSWORD)
+        return given().baseUri(BASE_URL).basePath("/api").auth().oauth2(readToken)
                 .when().get("/statistics/last-observation-date")
                 .then().statusCode(200)
                 .extract().jsonPath().getMap("$", String.class, String.class);

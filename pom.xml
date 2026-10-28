@@ -19,10 +19,12 @@
 
     <properties>
         <jme-spring-boot-integration-test.version>8.6.0</jme-spring-boot-integration-test.version>
+        <jeap-oauth-mock-server.version>11.14.0</jeap-oauth-mock-server.version>
         <maven.javadoc.skip>true</maven.javadoc.skip>
     </properties>
 
     <modules>
+        <module>jme-reaction-observer-auth-scs</module>
         <module>jme-reaction-observer-service</module>
         <module>jme-reaction-observer-test</module>
     </modules>

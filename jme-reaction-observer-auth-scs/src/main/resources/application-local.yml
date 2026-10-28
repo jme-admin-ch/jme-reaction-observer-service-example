@@ -1,0 +1,26 @@
+server:
+  port: 8180
+
+mockserver:
+  base-url: "http://localhost:${server.port}/jme-reaction-observer-auth-scs"
+
+# The Reaction Observer Service API accepts bearer tokens only, authorized by the semantic roles
+# '<system-name>_@reactions_#read' and '..._#write'. The roles carry no tenant part: the reaction graph of a
+# system is nobody's system in particular. See the jeap-oauth-mock-server project for the meaning of the
+# configuration parameters.
+oauth-mock-data:
+  clients:
+
+    # A consumer of the reaction graph, e.g. the Architecture Repository importing the observed reactions.
+    - client-id: "jme-reaction-observer-reader"
+      client-secret: "{noop}secret"
+      context: "SYS"
+      userroles: [ "jme_@reactions_#read" ]
+      audience: [ "jme-reaction-observer-service" ]
+
+    # Whoever operates the instance: they may trigger the aggregation of the observed reactions manually.
+    - client-id: "jme-reaction-observer-operator"
+      client-secret: "{noop}secret"
+      context: "SYS"
+      userroles: [ "jme_@reactions_#write" ]
+      audience: [ "jme-reaction-observer-service" ]

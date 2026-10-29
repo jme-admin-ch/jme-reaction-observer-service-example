@@ -16,11 +16,11 @@ oauth-mock-data:
       client-secret: "{noop}secret"
       context: "SYS"
       userroles: [ "jme_@reactions_#read" ]
-      audience: [ "jme-reaction-observer-service" ]
+      audience: [ "https://resources.jme.admin.ch/jme/jme-reaction-observer-service" ]
 
     # Whoever operates the instance: they may trigger the aggregation of the observed reactions manually.
     - client-id: "jme-reaction-observer-operator"
       client-secret: "{noop}secret"
       context: "SYS"
       userroles: [ "jme_@reactions_#write" ]
-      audience: [ "jme-reaction-observer-service" ]
+      audience: [ "https://resources.jme.admin.ch/jme/jme-reaction-observer-service" ]

@@ -32,6 +32,8 @@ jeap:
   security:
     oauth2:
       resourceserver:
+        resource-id: "https://resources.jme.admin.ch/jme/jme-reaction-observer-service"
+        strict-audience-validation: "on"
         # Required: the service refuses to start without an authorization server and a system name, because
         # its API accepts OAuth2 bearer tokens only, authorized by the semantic roles 'jme_@reactions_#read'
         # and 'jme_@reactions_#write'. This example points at the jEAP OAuth mock server of the module

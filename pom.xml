@@ -11,15 +11,15 @@
 
     <groupId>ch.admin.bit.jeap.jme.reactionobserver</groupId>
     <artifactId>jme-reaction-observer-service-example</artifactId>
-    <version>13.16.1-SNAPSHOT</version>
+    <version>13.16.2-SNAPSHOT</version>
     <packaging>pom</packaging>
     <description>
         JME example instance of the jEAP Reaction Observer Service
     </description>
 
     <properties>
-        <jme-spring-boot-integration-test.version>8.7.1</jme-spring-boot-integration-test.version>
-        <jeap-oauth-mock-server.version>11.15.0</jeap-oauth-mock-server.version>
+        <jme-spring-boot-integration-test.version>8.7.2</jme-spring-boot-integration-test.version>
+        <jeap-oauth-mock-server.version>11.15.1</jeap-oauth-mock-server.version>
         <maven.javadoc.skip>true</maven.javadoc.skip>
     </properties>
 

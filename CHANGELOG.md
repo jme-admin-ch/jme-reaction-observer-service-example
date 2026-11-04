@@ -5,6 +5,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres
 to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [13.18.0] - 2026-11-04
+
+### Dependencies
+- **ch.admin.bit.jeap:jeap-spring-boot-parent**: 41.30.0 → 41.31.0 (minor)
+- **ch.admin.bit.jeap:jeap-reaction-observer-service-instance**: 12.17.1 → 12.17.2 (patch)
+- **ch.admin.bit.jeap:jeap-oauth-mock-server**: 11.15.1 → 11.15.2 (patch)
+- **ch.admin.bit.jeap:jeap-reaction-observer-service-test**: 12.17.1 → 12.17.2 (patch)
+
 ## [13.17.0] - 2026-11-03
 
 ### Dependencies

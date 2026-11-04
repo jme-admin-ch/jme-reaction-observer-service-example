@@ -1,0 +1,31 @@
+spring:
+  application:
+    name: jme-ros-external
+  main:
+    banner-mode: off
+
+server:
+  servlet:
+    context-path: /${spring.application.name}
+
+jme:
+  ros:
+    external:
+      # Longer than the read timeout of the order service (2s), so that a delayed rating is a call without response
+      delay: 4s
+
+jeap:
+  monitor:
+    prometheus:
+      password: "{noop}secret"
+  swagger:
+    status: open
+  web:
+    tls:
+      enabled: false
+  # A system outside of jEAP never returns the header of the jEAP Reaction Observer. The switch takes effect as soon
+  # as the services get the header module of the jEAP Reaction Observer through the jEAP parent.
+  reaction:
+    observer:
+      header:
+        enabled: false

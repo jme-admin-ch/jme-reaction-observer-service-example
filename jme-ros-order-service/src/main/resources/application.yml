@@ -1,0 +1,35 @@
+spring:
+  application:
+    name: jme-ros-order-service
+  main:
+    banner-mode: off
+
+server:
+  servlet:
+    context-path: /${spring.application.name}
+
+jme:
+  ros:
+    order-service:
+      connect-timeout: 2s
+      read-timeout: 2s
+
+jeap:
+  messaging:
+    kafka:
+      system-name: jme
+      service-name: ${spring.application.name}
+      error-topic-name: jme-messageprocessing-failed
+  reaction:
+    observer:
+      events:
+        reaction-identified-topic: jme-reaction-identified
+        reactions-observed-topic: jme-reactions-observed
+  monitor:
+    prometheus:
+      password: "{noop}secret"
+  swagger:
+    status: open
+  web:
+    tls:
+      enabled: false

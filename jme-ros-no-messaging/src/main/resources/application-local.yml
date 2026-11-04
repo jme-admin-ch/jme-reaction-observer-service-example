@@ -1,0 +1,7 @@
+server:
+  port: 8094
+
+jme:
+  ros:
+    no-messaging:
+      product-catalog-url: "http://localhost:8093/jme-ros-header-only"

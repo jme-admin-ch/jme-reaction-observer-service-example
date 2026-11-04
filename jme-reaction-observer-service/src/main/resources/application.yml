@@ -46,6 +46,9 @@ jeap:
   reaction:
     observer:
       service:
+        # Rebuild the reaction graph every 10 seconds instead of once a day, so that tests and demos of the demo
+        # system see the current graph without a restart
+        graph-refresh-cron-expression: "*/10 * * * * *"
         kafka:
           reaction-identified-topic: jme-reaction-identified
           reactions-observed-topic: jme-reactions-observed

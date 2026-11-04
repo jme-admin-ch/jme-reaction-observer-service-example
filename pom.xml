@@ -11,7 +11,7 @@
 
     <groupId>ch.admin.bit.jeap.jme.reactionobserver</groupId>
     <artifactId>jme-reaction-observer-service-example</artifactId>
-    <version>13.20.0-SNAPSHOT</version>
+    <version>13.21.0-SNAPSHOT</version>
     <packaging>pom</packaging>
     <description>
         JME example instance of the jEAP Reaction Observer Service
@@ -21,13 +21,40 @@
         <jme-spring-boot-integration-test.version>8.7.2</jme-spring-boot-integration-test.version>
         <jeap-oauth-mock-server.version>11.15.2</jeap-oauth-mock-server.version>
         <maven.javadoc.skip>true</maven.javadoc.skip>
+        <!-- Version of the JmeRos* message types of the demo system in the jme-message-type-registry -->
+        <jme-ros-message-types.version>1.0.0</jme-ros-message-types.version>
     </properties>
 
     <modules>
         <module>jme-reaction-observer-auth-scs</module>
         <module>jme-reaction-observer-service</module>
+        <module>jme-ros-order-service</module>
+        <module>jme-ros-partner-service</module>
+        <module>jme-ros-header-only</module>
+        <module>jme-ros-no-messaging</module>
+        <module>jme-ros-external</module>
         <module>jme-reaction-observer-test</module>
     </modules>
+
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>ch.admin.bit.jeap.jme.messagetype.jme</groupId>
+                <artifactId>jme-ros-order-submitted-event</artifactId>
+                <version>${jme-ros-message-types.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>ch.admin.bit.jeap.jme.messagetype.jme</groupId>
+                <artifactId>jme-ros-order-checked-event</artifactId>
+                <version>${jme-ros-message-types.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>ch.admin.bit.jeap.jme.messagetype.jme</groupId>
+                <artifactId>jme-ros-credit-reserved-event</artifactId>
+                <version>${jme-ros-message-types.version}</version>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
 
     <build>
         <pluginManagement>

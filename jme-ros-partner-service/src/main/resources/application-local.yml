@@ -1,0 +1,22 @@
+server:
+  port: 8092
+
+spring:
+  datasource:
+    url: "jdbc:postgresql://localhost:5434/partner-db"
+    username: db-user
+    password: db-pass
+
+jeap:
+  messaging:
+    kafka:
+      bootstrapServers: "http://localhost:9092"
+      schemaRegistryUrl: "http://localhost:7781"
+      username: user
+      password: user-secret
+      securityProtocol: SASL_PLAINTEXT
+  reaction:
+    observer:
+      events:
+        # Report the observed reactions every 10 seconds instead of every 5 minutes, for demos and tests
+        observed-event-rate-seconds: 10

@@ -15,6 +15,12 @@ spring:
       enabled: true
       file: ../docker/docker-compose.yml
       lifecycle-management: start-and-stop
+      # Remove the containers and their volumes after the tests, so that every run starts with empty databases and
+      # topics (as on CI); otherwise the data of a previous run could satisfy the expectations of the tests
+      stop:
+        command: down
+        arguments:
+          - "--volumes"
       skip:
         in-tests: false
       arguments:
@@ -32,3 +38,4 @@ jeap:
       securityProtocol: SASL_PLAINTEXT
       systemName: jme
       serviceName: jme-reaction-observer-it
+      error-topic-name: jme-messageprocessing-failed

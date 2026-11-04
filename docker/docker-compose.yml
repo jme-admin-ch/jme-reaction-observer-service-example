@@ -9,6 +9,20 @@ services:
       - POSTGRES_PASSWORD=db-pass
       - POSTGRES_DB=reaction-observer-db
 
+  # Database of jme-ros-partner-service, the only service of the demo system with its own data (transactional outbox)
+  jmeros-partner-db:
+    image: postgres:18.6
+    ports:
+      - "5434:5432"
+    labels:
+      # Not a service connection of the integration test context (it uses the database of the Reaction Observer
+      # Service); only jme-ros-partner-service connects to this database
+      org.springframework.boot.ignore: true
+    environment:
+      - POSTGRES_USER=db-user
+      - POSTGRES_PASSWORD=db-pass
+      - POSTGRES_DB=partner-db
+
   jmeros-broker:
     image: confluentinc/cp-kafka:8.4.0
     hostname: broker

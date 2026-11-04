@@ -1,0 +1,43 @@
+spring:
+  application:
+    name: jme-ros-partner-service
+  main:
+    banner-mode: off
+  flyway:
+    # Flyway creates the default schema if it doesn't exist
+    default-schema: ${spring.jpa.properties.hibernate.default_schema}
+  jpa:
+    open-in-view: false
+    properties:
+      hibernate.default_schema: data
+  datasource:
+    hikari:
+      schema: ${spring.jpa.properties.hibernate.default_schema}
+      maximum-pool-size: 5
+
+server:
+  servlet:
+    context-path: /${spring.application.name}
+
+jeap:
+  messaging:
+    kafka:
+      system-name: jme
+      service-name: ${spring.application.name}
+      error-topic-name: jme-messageprocessing-failed
+  reaction:
+    observer:
+      events:
+        reaction-identified-topic: jme-reaction-identified
+        reactions-observed-topic: jme-reactions-observed
+  monitor:
+    prometheus:
+      password: "{noop}secret"
+  postgresql:
+    aws:
+      enabled: false
+  swagger:
+    status: open
+  web:
+    tls:
+      enabled: false

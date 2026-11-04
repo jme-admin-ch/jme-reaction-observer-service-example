@@ -1,0 +1,24 @@
+server:
+  port: 8091
+
+jme:
+  ros:
+    order-service:
+      product-catalog-url: "http://localhost:8093/jme-ros-header-only"
+      price-service-url: "http://localhost:8094/jme-ros-no-messaging"
+      rating-service-url: "http://localhost:8095/jme-ros-external"
+      partner-service-url: "http://localhost:8092/jme-ros-partner-service"
+
+jeap:
+  messaging:
+    kafka:
+      bootstrapServers: "http://localhost:9092"
+      schemaRegistryUrl: "http://localhost:7781"
+      username: user
+      password: user-secret
+      securityProtocol: SASL_PLAINTEXT
+  reaction:
+    observer:
+      events:
+        # Report the observed reactions every 10 seconds instead of every 5 minutes, for demos and tests
+        observed-event-rate-seconds: 10

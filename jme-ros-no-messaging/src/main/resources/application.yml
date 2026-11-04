@@ -1,0 +1,19 @@
+spring:
+  application:
+    name: jme-ros-no-messaging
+  main:
+    banner-mode: off
+
+server:
+  servlet:
+    context-path: /${spring.application.name}
+
+jeap:
+  monitor:
+    prometheus:
+      password: "{noop}secret"
+  swagger:
+    status: open
+  web:
+    tls:
+      enabled: false

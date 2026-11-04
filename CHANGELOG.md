@@ -5,6 +5,21 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres
 to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [13.21.0] - 2026-11-05
+
+### Added
+
+- Demo system of five services whose reactions the Reaction Observer Service observes: `jme-ros-order-service`
+  (consumer with the Reaction Observer Library), `jme-ros-partner-service` (provider with the Reaction Observer library and the
+  transactional outbox), `jme-ros-header-only`, `jme-ros-no-messaging` and `jme-ros-external` (without the
+  Reaction Observer library). The services publish the new `JmeRos*` message types of the JME message type registry.
+- End-to-end test `DemoSystemIT` verifying what the Reaction Observer Service sees of the chains of the demo system.
+
+### Changed
+
+- The Reaction Observer Service of the example rebuilds its graph every 10 seconds, so that tests and demos see the
+  current graph without a restart.
+
 ## [13.20.0] - 2026-11-05
 
 ### Dependencies

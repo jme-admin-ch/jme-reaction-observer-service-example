@@ -3,6 +3,7 @@ package ch.admin.bit.jeap.jme.reactionobserver.order.client;
 import ch.admin.bit.jeap.jme.reactionobserver.order.OrderServiceProperties;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClient;
+import org.springframework.web.client.RestClientException;
 
 /**
  * Calls the price service (jme-ros-no-messaging).
@@ -25,7 +26,7 @@ public class PriceClient {
                 .retrieve()
                 .body(PriceResponse.class);
         if (price == null) {
-            throw new IllegalStateException("No price returned for product " + productId);
+            throw new RestClientException("No price returned for product " + productId);
         }
         return price.unitPrice();
     }

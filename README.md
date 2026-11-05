@@ -145,7 +145,7 @@ so the quantity of an order (1 to 1000) selects the case:
 | `quantity` 10–50 | credit rating | `ACCEPTED` |
 | `quantity` 10–50, `simulateSlowRating: true` | the credit rating answers only after the timeout of the order service (call without response) | `REVIEW_REQUIRED` |
 | `quantity` 51–1000 | credit limit exceeded, the partner service answers `409` | `REJECTED` |
-| `simulateFailedReservation: true` | the partner service writes the reservation and its event, then fails with a rollback (`500`) | `REVIEW_REQUIRED` |
+| `quantity` 1–50, `simulateFailedReservation: true` | the partner service writes the reservation and its event, then fails with a rollback (`500`) | `REVIEW_REQUIRED` |
 
 The services and events are named after the domain where they stand for common business services (order
 service, partner service); the other three services model a specific technical situation and are named

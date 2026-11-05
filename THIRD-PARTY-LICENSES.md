@@ -80,6 +80,7 @@ Apache License Version 2.0
  * error-prone annotations - [com.google.errorprone:error_prone_annotations](https://errorprone.info/error_prone_annotations)
  * Guava InternalFutureFailureAccess and InternalFutures - [com.google.guava:failureaccess](https://github.com/google/guava/failureaccess)
  * Guava: Google Core Libraries for Java - [com.google.guava:guava](https://github.com/google/guava)
+ * Guava: Google Core Libraries for Java - [com.google.guava:guava](https://github.com/google/guava)
  * Guava ListenableFuture only - [com.google.guava:listenablefuture](https://github.com/google/guava/listenablefuture)
  * J2ObjC Annotations - [com.google.j2objc:j2objc-annotations](https://github.com/google/j2objc/)
  * Jimfs - [com.google.jimfs:jimfs](https://github.com/google/jimfs/jimfs)

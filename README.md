@@ -33,11 +33,6 @@ It also contains a small demo system of five services whose reactions the Reacti
 * **jme-ros-external**: Credit rating agency standing for a system outside of jEAP; does not return the name of an
   executed HTTP operation in a header for a reaction observer.
 
-## Changes
-
-This project is versioned using [Semantic Versioning](http://semver.org/) and all changes are documented in
-[CHANGELOG.md](./CHANGELOG.md) following the format defined in [Keep a Changelog](http://keepachangelog.com/).
-
 ## Prerequisites
 
 To use this project, ensure you have the following installed:
@@ -252,6 +247,11 @@ On CI the `CI` environment variable must be set. This activates the `ci` Spring 
 `docker-compose-ci.yml` as an overlay (removing host port bindings, using the container hostnames, and
 switching to the broker's internal, unauthenticated listener). On CI an isolated Docker network is used to
 allow for parallel builds.
+
+## Changes
+
+This project is versioned using [Semantic Versioning](http://semver.org/) and all changes are documented in
+[CHANGELOG.md](./CHANGELOG.md) following the format defined in [Keep a Changelog](http://keepachangelog.com/).
 
 ## Note
 

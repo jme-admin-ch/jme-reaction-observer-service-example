@@ -6,6 +6,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [13.23.0] - 2026-11-08
+
+### Dependencies
+- **ch.admin.bit.jeap.jme:jme-spring-boot-integration-test**: 8.7.2 → 8.8.0 (minor)
+
 ## [13.22.1] - 2026-11-06
 
 - The Changes section in the README.md has been moved to the end of the file.

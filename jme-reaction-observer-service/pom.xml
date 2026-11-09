@@ -11,7 +11,7 @@
 
     <artifactId>jme-reaction-observer-service</artifactId>
     <groupId>ch.admin.bit.jeap.jme.reactionobserver</groupId>
-    <version>13.23.0-SNAPSHOT</version>
+    <version>13.24.0-SNAPSHOT</version>
     <description>
         JME example instance of the jEAP Reaction Observer Service
     </description>
@@ -99,12 +99,24 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-deploy-plugin</artifactId>
                 <executions>
-                    <!-- disable default deploy (this is a runnable example, not a published library) -->
+                    <!-- disable all deploys (this is a runnable example, not a published library) -->
                     <execution>
                         <id>default-deploy</id>
                         <phase>none</phase>
                     </execution>
+                    <execution>
+                        <id>after-publish-validation-deploy</id>
+                        <phase>none</phase>
+                    </execution>
                 </executions>
+            </plugin>
+            <!-- keep this module out of the bundle of the profile maven-central-publish -->
+            <plugin>
+                <groupId>ch.admin.bit.jeap</groupId>
+                <artifactId>jeap-central-publishing-maven-plugin</artifactId>
+                <configuration>
+                    <skipPublishing>true</skipPublishing>
+                </configuration>
             </plugin>
             <plugin>
                 <groupId>org.springframework.boot</groupId>

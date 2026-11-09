@@ -11,16 +11,38 @@
 
     <groupId>ch.admin.bit.jeap.jme.reactionobserver</groupId>
     <artifactId>jme-reaction-observer-service-example</artifactId>
-    <version>13.23.0-SNAPSHOT</version>
+    <version>13.24.0-SNAPSHOT</version>
     <packaging>pom</packaging>
+    <name>JME Reaction Observer Service Example</name>
     <description>
         JME example instance of the jEAP Reaction Observer Service
     </description>
 
+    <url>https://github.com/jme-admin-ch/jme-reaction-observer-service-example/tree/main</url>
+    <scm>
+        <url>https://github.com/jme-admin-ch/jme-reaction-observer-service-example.git</url>
+        <connection>scm:git:git://github.com/jme-admin-ch/jme-reaction-observer-service-example.git</connection>
+        <developerConnection>scm:git:ssh://git@github.com/jme-admin-ch/jme-reaction-observer-service-example.git</developerConnection>
+    </scm>
+    <developers>
+        <developer>
+            <name>BIT</name>
+            <email>jeap-community@bit.admin.ch</email>
+            <organization>Federal Office of Information Technology, Systems and Telecommunication FOITT</organization>
+            <organizationUrl>https://www.bit.admin.ch/</organizationUrl>
+        </developer>
+    </developers>
+    <licenses>
+        <license>
+            <name>Apache License, Version 2.0</name>
+            <url>https://www.apache.org/licenses/LICENSE-2.0</url>
+        </license>
+    </licenses>
+
     <properties>
         <jme-spring-boot-integration-test.version>8.8.0</jme-spring-boot-integration-test.version>
         <jeap-oauth-mock-server.version>11.15.2</jeap-oauth-mock-server.version>
-        <maven.javadoc.skip>true</maven.javadoc.skip>
+        <maven.javadoc.skip>false</maven.javadoc.skip>
         <!-- Version of the JmeRos* message types of the demo system in the jme-message-type-registry -->
         <jme-ros-message-types.version>1.0.0</jme-ros-message-types.version>
     </properties>

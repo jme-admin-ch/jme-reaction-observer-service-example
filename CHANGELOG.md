@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [13.24.0] - 2026-11-09
+
+- The example is now published to Maven Central, except for the executable `jme-reaction-observer-service`.
+
 ## [13.23.0] - 2026-11-08
 
 ### Dependencies

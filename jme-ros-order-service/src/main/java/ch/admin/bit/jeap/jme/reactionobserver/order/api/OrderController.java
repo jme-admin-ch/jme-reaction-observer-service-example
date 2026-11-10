@@ -30,6 +30,7 @@ class OrderController {
     @PostMapping
     @ResponseStatus(HttpStatus.ACCEPTED)
     public OrderResponse submitOrder(@Valid @RequestBody OrderRequest order) {
+        log.debug("POST /api/orders called with {}", order);
         String orderId = UUID.randomUUID().toString();
         orderEventPublisher.publishOrderSubmitted(orderId, order);
         log.info("Order {} submitted: {}", orderId, order);

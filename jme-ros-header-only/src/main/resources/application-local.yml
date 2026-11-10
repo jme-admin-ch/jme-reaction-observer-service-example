@@ -1,2 +1,7 @@
 server:
   port: 8093
+
+logging:
+  level:
+    # Log how the REST endpoints of this service are called
+    ch.admin.bit.jeap.jme.reactionobserver.headeronly.ProductController: DEBUG

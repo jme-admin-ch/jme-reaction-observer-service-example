@@ -1,6 +1,11 @@
 server:
   port: 8091
 
+logging:
+  level:
+    # Log how the REST endpoints of this service are called
+    ch.admin.bit.jeap.jme.reactionobserver.order.api.OrderController: DEBUG
+
 jme:
   ros:
     order-service:

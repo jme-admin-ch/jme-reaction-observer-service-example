@@ -8,6 +8,11 @@ server:
   servlet:
     context-path: /${spring.application.name}
 
+springdoc:
+  swagger-ui:
+    # Swagger UI lists the API groups by name and would otherwise preselect the first one, "Actuator"
+    urls-primary-name: Order API
+
 jme:
   ros:
     order-service:

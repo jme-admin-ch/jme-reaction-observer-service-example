@@ -7,6 +7,7 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Positive;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -16,6 +17,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
+@Slf4j
 @RestController
 @RequestMapping("/api/partners/{partnerId}/credit-reservations")
 @RequiredArgsConstructor
@@ -30,8 +32,11 @@ class CreditReservationController {
                                              @Valid @RequestBody CreditReservationRequest request,
                                              @Parameter(description = "Demo switch: fail with a rollback after writing the reservation and its event")
                                              @RequestParam(defaultValue = "false") boolean fail) {
+        log.debug("POST /api/partners/{}/credit-reservations called with {}, fail={}", partnerId, request, fail);
         CreditReservation reservation = creditReservationService.reserve(partnerId, request.orderId(), request.amount(), fail);
-        return new CreditReservationResponse(reservation.getId().toString());
+        CreditReservationResponse response = new CreditReservationResponse(reservation.getId().toString());
+        log.debug("POST /api/partners/{}/credit-reservations answered with {}", partnerId, response);
+        return response;
     }
 
     record CreditReservationRequest(

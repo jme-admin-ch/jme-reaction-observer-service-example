@@ -1,6 +1,7 @@
 package ch.admin.bit.jeap.jme.reactionobserver.nomessaging;
 
 import io.swagger.v3.oas.annotations.Operation;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -8,6 +9,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.RestClient;
 
+@Slf4j
 @RestController
 @RequestMapping("/api/prices")
 class PriceController {
@@ -31,11 +33,14 @@ class PriceController {
     @Operation(summary = "Get the unit price of a product; checks the product in the catalog first")
     @GetMapping("/{productId}")
     public PriceResponse getPrice(@PathVariable String productId) {
+        log.debug("GET /api/prices/{} called", productId);
         productCatalog.get()
                 .uri("/api/products/{productId}", productId)
                 .retrieve()
                 .toBodilessEntity();
-        return new PriceResponse(productId, UNIT_PRICE);
+        PriceResponse response = new PriceResponse(productId, UNIT_PRICE);
+        log.debug("GET /api/prices/{} answered with {}", productId, response);
+        return response;
     }
 
     record PriceResponse(String productId, int unitPrice) {

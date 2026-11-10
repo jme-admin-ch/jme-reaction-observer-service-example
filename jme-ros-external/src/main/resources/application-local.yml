@@ -1,2 +1,7 @@
 server:
   port: 8095
+
+logging:
+  level:
+    # Log how the REST endpoints of this service are called
+    ch.admin.bit.jeap.jme.reactionobserver.external.RatingController: DEBUG

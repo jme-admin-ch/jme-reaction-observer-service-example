@@ -28,6 +28,7 @@ class RatingController {
     public RatingResponse getRating(@PathVariable String partnerId,
                                     @Parameter(description = "Demo switch: answer only after a delay longer than the timeout of the order service")
                                     @RequestParam(defaultValue = "false") boolean delay) throws InterruptedException {
+        log.debug("GET /api/ratings/{} called with delay={}", partnerId, delay);
         if (delay) {
             log.info("Delaying the rating of partner {} by {}", partnerId, this.delay);
             Thread.sleep(this.delay);

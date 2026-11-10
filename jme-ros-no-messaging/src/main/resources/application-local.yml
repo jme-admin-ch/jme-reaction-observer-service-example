@@ -1,6 +1,11 @@
 server:
   port: 8094
 
+logging:
+  level:
+    # Log how the REST endpoints of this service are called
+    ch.admin.bit.jeap.jme.reactionobserver.nomessaging.PriceController: DEBUG
+
 jme:
   ros:
     no-messaging:

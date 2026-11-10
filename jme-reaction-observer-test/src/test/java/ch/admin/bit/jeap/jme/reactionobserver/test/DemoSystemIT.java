@@ -119,7 +119,7 @@ class DemoSystemIT extends BootServiceSpringIntegrationTestBase {
         startService(EXTERNAL, EXTERNAL_BASE_URL, Map.of(
                 SERVER_PORT, port(6),
                 // longer than the read timeout of the order service
-                "jme.ros.external.delay", "3s"));
+                "jme.ros.external.delay", "8s"));
         startService(PARTNER_SERVICE, PARTNER_SERVICE_BASE_URL, Map.of(
                 SERVER_PORT, port(3),
                 OBSERVED_EVENT_RATE, OBSERVED_EVENT_RATE_SECONDS));
@@ -130,7 +130,8 @@ class DemoSystemIT extends BootServiceSpringIntegrationTestBase {
                 "jme.ros.order-service.price-service-url", NO_MESSAGING_BASE_URL,
                 "jme.ros.order-service.rating-service-url", EXTERNAL_BASE_URL,
                 "jme.ros.order-service.partner-service-url", PARTNER_SERVICE_BASE_URL,
-                "jme.ros.order-service.read-timeout", "1s"));
+                // generous, because the first calls to the freshly started services are slow on a busy build agent
+                "jme.ros.order-service.read-timeout", "5s"));
 
         // Messages published before a consumer group has its partitions would be skipped (auto.offset.reset=latest).
         // The listeners of the test itself (DemoSystemEvents) need no wait: they read their topics from the beginning
@@ -148,9 +149,12 @@ class DemoSystemIT extends BootServiceSpringIntegrationTestBase {
 
     @Test
     void demoSystemRunsThroughAllCasesAndReactionObserverServiceSeesOnlyTheMessagePartsOfTheChains() {
-        // given/when
+        // given/when: the first order runs through alone and identifies the reactions, then the others follow
         Map<DemoCase, String> orderIds = new LinkedHashMap<>();
-        DEMO_CASES.forEach(demoCase -> orderIds.put(demoCase, submitOrder(demoCase)));
+        DemoCase firstCase = DEMO_CASES.getFirst();
+        orderIds.put(firstCase, submitOrder(firstCase));
+        awaitReactionObserverServiceKnowsThePublishingServices();
+        DEMO_CASES.subList(1, DEMO_CASES.size()).forEach(demoCase -> orderIds.put(demoCase, submitOrder(demoCase)));
 
         // then: every order has been checked with the expected result
         await().atMost(Duration.ofMinutes(1)).untilAsserted(() -> orderIds.forEach((demoCase, orderId) ->
@@ -203,6 +207,30 @@ class DemoSystemIT extends BootServiceSpringIntegrationTestBase {
 
         // and: the services without the library do not appear at all
         assertThat(getComponentNames()).doesNotContain(HEADER_ONLY, NO_MESSAGING, EXTERNAL);
+    }
+
+    /**
+     * Waits until the Reaction Observer Service has stored a reaction of each service publishing events.
+     * <p>
+     * The service discards the counts of reactions it doesn't know yet, and a reaction's identification and its counts
+     * reach it on different topics. If all orders were submitted at once, a single report could carry all counts of
+     * the reaction publishing the order submitted event, overtake its identification and be lost, and the reaction
+     * would never appear in the graph.
+     * <p>
+     * The service can only be asked for the components it knows, not for single reactions, but that is enough for the
+     * three reactions of this test:
+     * <ul>
+     * <li>Publishing the order submitted event is the first reaction the order service identifies, so it is stored as
+     * soon as the order service is known.</li>
+     * <li>Publishing the credit reserved event is the only reaction of the partner service.</li>
+     * <li>Checking an order cannot have all its counts in one report: the orders are checked one after the other, and
+     * the order with the slow rating takes the whole read timeout, which is longer than the reporting period. The
+     * orders from then on are counted in a later report, when the reaction has long been stored.</li>
+     * </ul>
+     */
+    private void awaitReactionObserverServiceKnowsThePublishingServices() {
+        await().atMost(Duration.ofMinutes(1)).untilAsserted(() ->
+                assertThat(getComponentNames()).contains(ORDER_SERVICE, PARTNER_SERVICE));
     }
 
     private String submitOrder(DemoCase demoCase) {

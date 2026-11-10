@@ -6,6 +6,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [13.25.0] - 2026-11-10
+
+### Dependencies
+- **ch.admin.bit.jeap:jeap-reaction-observer-service-instance**: 12.17.2 → 12.18.0 (minor)
+- **ch.admin.bit.jeap:jeap-oauth-mock-server**: 11.15.2 → 11.16.0 (minor)
+- **ch.admin.bit.jeap:jeap-reaction-observer-service-test**: 12.17.2 → 12.18.0 (minor)
+
 ## [13.24.0] - 2026-11-09
 
 - The example is now published to Maven Central, except for the executable `jme-reaction-observer-service`.

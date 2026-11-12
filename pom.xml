@@ -5,13 +5,13 @@
     <parent>
         <groupId>ch.admin.bit.jeap</groupId>
         <artifactId>jeap-spring-boot-parent</artifactId>
-        <version>41.35.0</version>
+        <version>41.36.0</version>
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
 
     <groupId>ch.admin.bit.jeap.jme.reactionobserver</groupId>
     <artifactId>jme-reaction-observer-service-example</artifactId>
-    <version>13.27.0-SNAPSHOT</version>
+    <version>13.28.0-SNAPSHOT</version>
     <packaging>pom</packaging>
     <name>JME Reaction Observer Service Example</name>
     <description>
@@ -41,7 +41,7 @@
 
     <properties>
         <jme-spring-boot-integration-test.version>8.8.0</jme-spring-boot-integration-test.version>
-        <jeap-oauth-mock-server.version>11.16.0</jeap-oauth-mock-server.version>
+        <jeap-oauth-mock-server.version>11.17.0</jeap-oauth-mock-server.version>
         <maven.javadoc.skip>false</maven.javadoc.skip>
         <!-- Version of the JmeRos* message types of the demo system in the jme-message-type-registry -->
         <jme-ros-message-types.version>1.0.0</jme-ros-message-types.version>

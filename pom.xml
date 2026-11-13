@@ -5,13 +5,13 @@
     <parent>
         <groupId>ch.admin.bit.jeap</groupId>
         <artifactId>jeap-spring-boot-parent</artifactId>
-        <version>41.36.0</version>
+        <version>41.37.0</version>
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
 
     <groupId>ch.admin.bit.jeap.jme.reactionobserver</groupId>
     <artifactId>jme-reaction-observer-service-example</artifactId>
-    <version>13.28.0-SNAPSHOT</version>
+    <version>13.29.0-SNAPSHOT</version>
     <packaging>pom</packaging>
     <name>JME Reaction Observer Service Example</name>
     <description>

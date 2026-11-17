@@ -19,10 +19,11 @@ import java.util.OptionalInt;
  * The product catalog, the price service and the credit reservation are always called, the external credit rating
  * only depends on the amount. The outcome of a call only changes the result of the check, never which calls are made:
  * a reaction is identified by its trigger and the set of its actions, so skipping a call after an error would create
- * a second reaction. The call to the external credit rating agency is the exception and depends on the amount: it
- * never becomes an action, because the agency never returns the header of the jEAP Reaction Observer. At most it is
- * counted as an unidentified action, which changes neither the set of actions nor the reaction. Every error of a call
- * is caught, so that the order checked event is published in any case.
+ * a second reaction. The call to the external credit rating agency is the exception and depends on the amount. The
+ * agency never returns the header of the jEAP Reaction Observer, so once REST calls are observed, the order service
+ * names this action itself, by the host and the context the call went to. There are then two reactions to an order
+ * on purpose: one with and one without the call to the agency. Every error of a call is caught, so that the order
+ * checked event is published in any case.
  */
 @Slf4j
 @Component

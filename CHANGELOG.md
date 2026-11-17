@@ -5,6 +5,18 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres
 to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [13.33.0] - 2026-11-17
+
+### Added
+
+- The example shows the API v2 of the Reaction Observer Service (`/api/v2/graphs/**`), which has every kind of
+  interface of a reaction, e.g. the HTTP operations it calls. The end-to-end tests verify the API v2 next to the
+  API v1.
+
+### Dependencies
+- **ch.admin.bit.jeap:jeap-reaction-observer-service-instance**: 12.22.0 → 12.23.0 (minor)
+- **ch.admin.bit.jeap:jeap-reaction-observer-service-test**: 12.22.0 → 12.23.0 (minor)
+
 ## [13.32.0] - 2026-11-16
 
 ### Dependencies

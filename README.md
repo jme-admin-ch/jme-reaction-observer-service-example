@@ -159,6 +159,15 @@ Observer Service therefore sees only the message parts of the chains:
   observed).
 * `jme-ros-header-only`, `jme-ros-no-messaging` and `jme-ros-external` do not appear at all.
 
+The Reaction Observer Service serves its graphs in two versions. The API v1 (`/api/graphs/**`) shows messages
+only. The API v2 (`/api/v2/graphs/**`) shows every kind of interface a reaction has, e.g. the HTTP operations it
+calls. As long as only messages are observed, both versions show the same reactions of the demo system.
+
+Once REST calls are observed, an HTTP operation is named by the service providing it: `jme-ros-partner-service POST
+/api/partners/{}/credit-reservations`. A service that does not name its operations to its callers, like
+`jme-ros-external`, will still be shown: the caller names the operation itself, by the host and the context the
+call went to and the method, e.g. `//localhost/jme-ros-external GET /{*}`.
+
 ### Running the demo
 
 Start the infrastructure (see [Infrastructure](#infrastructure)), build the project and start the Reaction
@@ -200,6 +209,17 @@ curl -H "Authorization: Bearer $TOKEN" \
   http://localhost:8080/jme-reaction-observer-service/api/graphs/components/jme-ros-order-service
 ```
 
+The same graph in the API v2, and the index of the interfaces with the path of the graph of each interface:
+
+```shell
+curl -H "Authorization: Bearer $TOKEN" \
+  http://localhost:8080/jme-reaction-observer-service/api/v2/graphs/components/jme-ros-order-service
+curl -H "Authorization: Bearer $TOKEN" \
+  http://localhost:8080/jme-reaction-observer-service/api/v2/graphs/interfaces
+```
+
+The Swagger UI of the Reaction Observer Service lists the API v2 in a group of its own.
+
 `WRITE_TOKEN` is a token of the client `jme-reaction-observer-operator`.
 
 The version of the Reaction Observer Library is managed by the jEAP parent. To lift a single service to
@@ -233,10 +253,14 @@ This will:
 2. Start `jme-reaction-observer-auth-scs` and `jme-reaction-observer-service` as Maven subprocesses, each on a
    free port.
 3. `ReactionObserverExampleIT`: publish reaction-observer events onto the real Kafka broker and verify them
-   through the REST API.
+   through the REST API. One of the reactions calls two HTTP operations, one named by the service providing it
+   and one named by the caller: the API v1 shows the reaction with its messages only, the API v2 with the HTTP
+   operations as well, and the graph of each HTTP operation is fetched with the path from the index of the
+   interfaces.
 4. `DemoSystemIT`: additionally start the five services of the demo system, submit orders running through all
    cases of the demo system and verify through the REST API what the Reaction Observer Service sees of the
-   resulting chains (see [What the Reaction Observer Service sees](#what-the-reaction-observer-service-sees)).
+   resulting chains (see [What the Reaction Observer Service sees](#what-the-reaction-observer-service-sees)),
+   in the API v1 and in the API v2.
 5. Stop all services and containers.
 
 Ensure Docker is running and ports 5433, 5434, 7781 and 9092 are available.

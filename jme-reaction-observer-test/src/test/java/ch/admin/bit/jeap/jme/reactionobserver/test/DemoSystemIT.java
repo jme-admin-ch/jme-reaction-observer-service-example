@@ -3,7 +3,6 @@ package ch.admin.bit.jeap.jme.reactionobserver.test;
 import ch.admin.bit.jeap.jme.reactionobserver.event.order.checked.JmeRosOrderCheckResult;
 import ch.admin.bit.jeap.jme.test.BootServiceSpringIntegrationTestBase;
 import io.restassured.http.ContentType;
-import io.restassured.path.json.JsonPath;
 import io.restassured.response.Response;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -13,12 +12,9 @@ import org.springframework.context.annotation.Import;
 
 import java.time.Duration;
 import java.time.LocalDate;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
-import java.util.TreeSet;
 import java.util.stream.Collectors;
 
 import static ch.admin.bit.jeap.jme.reactionobserver.event.order.checked.JmeRosOrderCheckResult.ACCEPTED;
@@ -52,6 +48,8 @@ import static org.awaitility.Awaitility.await;
  *     calls are observed: only the message parts of the chains. Once REST calls are also observed the Reaction Observer
  *     Service will also see the HTTP parts.</li>
  * </ol>
+ * What the Reaction Observer Service sees is read through both versions of its graph API: the API v1 shows messages
+ * only, the API v2 every kind of interface. As long as no REST call is observed, both show the same reactions.
  */
 @Import(DemoSystemEvents.class)
 class DemoSystemIT extends BootServiceSpringIntegrationTestBase {
@@ -68,6 +66,7 @@ class DemoSystemIT extends BootServiceSpringIntegrationTestBase {
 
     private static final String AUTH_BASE_URL = baseUrl(0, AUTH_SCS);
     private static final String ROS_BASE_URL = baseUrl(1, ROS);
+    private static final String ROS_HOST_URL = "http://localhost:" + SERVICE_PORTS.get(1);
     private static final String ORDER_SERVICE_BASE_URL = baseUrl(2, ORDER_SERVICE);
     private static final String PARTNER_SERVICE_BASE_URL = baseUrl(3, PARTNER_SERVICE);
     private static final String HEADER_ONLY_BASE_URL = baseUrl(4, HEADER_ONLY);
@@ -191,22 +190,52 @@ class DemoSystemIT extends BootServiceSpringIntegrationTestBase {
                     .containsExactly(entry(201, 3), entry(409, 1), entry(500, 1));
         });
 
-        // and: once observed, aggregated and built into the graph, the Reaction Observer Service sees
-        // - the order service: publishing the order submitted event without trigger (the start endpoint is not
-        //   observed), and reacting to it with the order checked event; the REST calls are missing
-        // - the partner service: publishing the credit reserved event without trigger (REST requests are not observed)
-        String today = LocalDate.now().toString();
-        await().atMost(Duration.ofMinutes(2)).pollInterval(Duration.ofSeconds(3)).untilAsserted(() -> {
-            triggerAggregation(today);
-            assertThat(reactionsOf(ORDER_SERVICE)).containsExactlyInAnyOrder(
-                    "-> {" + ORDER_SUBMITTED + "}",
-                    ORDER_SUBMITTED + " -> {" + ORDER_CHECKED + "}");
-            assertThat(reactionsOf(PARTNER_SERVICE)).containsExactly(
-                    "-> {" + CREDIT_RESERVED + "}");
-        });
+        // and: once observed, aggregated and built into the graph, the Reaction Observer Service sees the message
+        // parts of the chains, in both versions of its graph API
+        await().atMost(Duration.ofMinutes(2)).pollInterval(Duration.ofSeconds(3))
+                .untilAsserted(this::assertReactionObserverServiceSeesTheMessagePartsOfTheChains);
+
+        // and: the index of the interfaces of the API v2 leads to the graph of an event
+        assertIndexOfInterfacesLeadsToTheGraphOfTheOrderSubmittedEvent();
 
         // and: the services without the library do not appear at all
         assertThat(getComponentNames()).doesNotContain(HEADER_ONLY, NO_MESSAGING, EXTERNAL);
+    }
+
+    /**
+     * Aggregates the observations of today and verifies what the Reaction Observer Service sees:
+     * <ul>
+     * <li>the order service: publishing the order submitted event without trigger (the start endpoint is not
+     * observed), and reacting to it with the order checked event; the REST calls are missing</li>
+     * <li>the partner service: publishing the credit reserved event without trigger (REST requests are not
+     * observed)</li>
+     * </ul>
+     * The API v2 shows the same reactions as the API v1: none of them has an interface other than a message yet.
+     */
+    private void assertReactionObserverServiceSeesTheMessagePartsOfTheChains() {
+        triggerAggregation(LocalDate.now().toString());
+        List<String> reactionsOfOrderService = reactionsOf(ORDER_SERVICE);
+        List<String> reactionsOfPartnerService = reactionsOf(PARTNER_SERVICE);
+        assertThat(reactionsOfOrderService).containsExactlyInAnyOrder(
+                "-> {" + ORDER_SUBMITTED + "}",
+                ORDER_SUBMITTED + " -> {" + ORDER_CHECKED + "}");
+        assertThat(reactionsOfPartnerService).containsExactly(
+                "-> {" + CREDIT_RESERVED + "}");
+        assertThat(reactionsOfApiV2(ORDER_SERVICE)).isEqualTo(reactionsOfOrderService);
+        assertThat(reactionsOfApiV2(PARTNER_SERVICE)).isEqualTo(reactionsOfPartnerService);
+    }
+
+    /**
+     * Verifies that the index of the interfaces of the API v2 lists the events, and that the path of the order
+     * submitted event leads to its graph: the reaction publishing the event and the reaction to it, both of the
+     * order service.
+     */
+    private void assertIndexOfInterfacesLeadsToTheGraphOfTheOrderSubmittedEvent() {
+        Map<String, String> pathsOfEvents = pathsOfInterfaces("event");
+        assertThat(pathsOfEvents).containsKeys(ORDER_SUBMITTED, ORDER_CHECKED, CREDIT_RESERVED);
+        assertThat(reactionsAt(pathsOfEvents.get(ORDER_SUBMITTED))).containsExactlyInAnyOrder(
+                "-> {" + ORDER_SUBMITTED + "}",
+                ORDER_SUBMITTED + " -> {" + ORDER_CHECKED + "}");
     }
 
     /**
@@ -248,45 +277,44 @@ class DemoSystemIT extends BootServiceSpringIntegrationTestBase {
     }
 
     /**
-     * The reactions of a component in the graph of the Reaction Observer Service, in the notation
+     * The reactions of a component in the graph of the API v1 of the Reaction Observer Service, in the notation
      * "trigger -> {actions}", with an empty trigger for reactions without trigger.
      */
-    private Set<String> reactionsOf(String component) {
+    private List<String> reactionsOf(String component) {
         Response response = given().baseUri(ROS_BASE_URL).basePath("/api").auth().oauth2(readToken)
                 .when().get("/graphs/components/{component}", component);
         if (response.statusCode() == 404) {
-            return Set.of();
+            return List.of();
         }
-        JsonPath graph = response.then().statusCode(200).extract().jsonPath();
+        return ReactionGraphs.ofApiV1(response.then().statusCode(200).extract().jsonPath());
+    }
 
-        Map<Long, String> messageTypes = new HashMap<>();
-        Set<Long> reactions = new TreeSet<>();
-        for (Map<String, Object> node : graph.<Map<String, Object>>getList("graph.nodes")) {
-            long id = ((Number) node.get("id")).longValue();
-            if ("MESSAGE".equals(node.get("nodeType"))) {
-                messageTypes.put(id, (String) node.get("messageType"));
-            } else if (component.equals(node.get("component"))) {
-                reactions.add(id);
-            }
+    /** The reactions of a component in the graph of the API v2, in the same notation. */
+    private List<String> reactionsOfApiV2(String component) {
+        Response response = given().baseUri(ROS_BASE_URL).basePath("/api").auth().oauth2(readToken)
+                .when().get("/v2/graphs/components/{component}", component);
+        if (response.statusCode() == 404) {
+            return List.of();
         }
+        return ReactionGraphs.ofApiV2(response.then().statusCode(200).extract().jsonPath());
+    }
 
-        Map<Long, String> triggers = new HashMap<>();
-        Map<Long, Set<String>> actions = new HashMap<>();
-        for (Map<String, Object> edge : graph.<Map<String, Object>>getList("graph.edges")) {
-            if ("TRIGGER".equals(edge.get("edgeType"))) {
-                long reaction = ((Number) edge.get("targetReactionId")).longValue();
-                triggers.put(reaction, messageTypes.get(((Number) edge.get("sourceId")).longValue()));
-            } else {
-                long reaction = ((Number) edge.get("sourceReactionId")).longValue();
-                actions.computeIfAbsent(reaction, _ -> new TreeSet<>())
-                        .add(messageTypes.get(((Number) edge.get("targetId")).longValue()));
-            }
-        }
+    /** The paths of the graphs of the interfaces of a type by their FQN, from the index of the API v2. */
+    private Map<String, String> pathsOfInterfaces(String interfaceType) {
+        List<Map<String, String>> entries = given().baseUri(ROS_BASE_URL).basePath("/api").auth().oauth2(readToken)
+                .queryParam("interfaceType", interfaceType)
+                .when().get("/v2/graphs/interfaces")
+                .then().statusCode(200)
+                .extract().jsonPath().getList("entries");
+        return entries.stream().collect(Collectors.toMap(entry -> entry.get("fqn"), entry -> entry.get("path")));
+    }
 
-        return reactions.stream()
-                .map(reaction -> (triggers.containsKey(reaction) ? triggers.get(reaction) + " " : "")
-                        + "-> {" + String.join(", ", actions.getOrDefault(reaction, Set.of())) + "}")
-                .collect(Collectors.toSet());
+    /** The reactions of the graph of the API v2 at a path taken from an index; the path has the context path. */
+    private List<String> reactionsAt(String path) {
+        return ReactionGraphs.ofApiV2(given().baseUri(ROS_HOST_URL).auth().oauth2(readToken)
+                .when().get(path)
+                .then().statusCode(200)
+                .extract().jsonPath());
     }
 
     private List<String> getComponentNames() {

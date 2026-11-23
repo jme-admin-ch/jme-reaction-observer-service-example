@@ -32,6 +32,8 @@ jeap:
       error-topic-name: jme-messageprocessing-failed
   reaction:
     observer:
+      # Reaction model version 2: outgoing HTTP requests are observed as actions, too
+      model-version: 2
       events:
         reaction-identified-topic: jme-reaction-identified
         reactions-observed-topic: jme-reactions-observed

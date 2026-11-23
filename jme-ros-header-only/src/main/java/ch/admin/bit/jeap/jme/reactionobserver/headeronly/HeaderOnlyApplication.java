@@ -5,7 +5,8 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 /**
  * Product catalog of the reaction observer demo system. It stands for a partner that only returns the header of the
- * jEAP Reaction Observer (once the header module is available), without using the library itself.
+ * jEAP Reaction Observer, without using the library itself. The header is set by the module
+ * {@code jeap-reaction-observer-header-starter}, which the jEAP parent brings to every service.
  */
 @SpringBootApplication
 public class HeaderOnlyApplication {

@@ -28,8 +28,8 @@ jeap:
   web:
     tls:
       enabled: false
-  # A system outside of jEAP never returns the header of the jEAP Reaction Observer. The switch takes effect as soon
-  # as the services get the header module of the jEAP Reaction Observer through the jEAP parent.
+  # A system outside of jEAP never returns the header of the jEAP Reaction Observer. The jEAP parent brings the
+  # header module of the jEAP Reaction Observer to every service, so this service has to switch it off.
   reaction:
     observer:
       header:

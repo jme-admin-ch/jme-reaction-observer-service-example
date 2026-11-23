@@ -149,24 +149,42 @@ events are defined in the [JME message type registry](https://github.com/jme-adm
 
 ### What the Reaction Observer Service sees
 
-With the currently released versions of the Reaction Observer Library, only messages are observed. The Reaction
-Observer Service therefore sees only the message parts of the chains:
+The order service and the partner service observe by reaction model version 2 of the Reaction Observer Library
+(`jeap.reaction.observer.model-version: 2`): next to the messages, the outgoing REST calls of a service are
+observed as actions. Incoming REST requests are not observed as triggers yet. The Reaction Observer Service
+therefore sees:
 
 * `jme-ros-order-service`: publishes `JmeRosOrderSubmittedEvent` without trigger (the start endpoint is not
-  observed) and reacts to `JmeRosOrderSubmittedEvent` with `JmeRosOrderCheckedEvent`. The REST calls are
-  missing.
+  observed) and reacts to `JmeRosOrderSubmittedEvent` with `JmeRosOrderCheckedEvent` and the REST calls to the
+  product catalog, the price service and the partner service. For an order from CHF 1000 the call of the external
+  credit rating belongs to the reaction, too: checking an order shows up as two reactions, without and with the
+  credit rating.
 * `jme-ros-partner-service`: publishes `JmeRosCreditReservedEvent` without trigger (REST requests are not
-  observed).
-* `jme-ros-header-only`, `jme-ros-no-messaging` and `jme-ros-external` do not appear at all.
+  observed as triggers yet).
+* `jme-ros-header-only`, `jme-ros-no-messaging` and `jme-ros-external` report no reactions of their own. They
+  appear as the providers of the HTTP operations the order service calls. The call of the price service to the
+  product catalog is not seen: the price service does not have the library.
 
-The Reaction Observer Service serves its graphs in two versions. The API v1 (`/api/graphs/**`) shows messages
-only. The API v2 (`/api/v2/graphs/**`) shows every kind of interface a reaction has, e.g. the HTTP operations it
-calls. As long as only messages are observed, both versions show the same reactions of the demo system.
+An HTTP operation is named by the service providing it: `jme-ros-partner-service POST
+/api/partners/{}/credit-reservations`. The partner service, the product catalog and the price service name their
+operations to their callers in the response header `JEAP-REACTION-OBSERVATION`, set by the module
+`jeap-reaction-observer-header-starter`. The jEAP parent brings this module to every service; a service does not
+have to add it. `jme-ros-external` stands for a system outside of jEAP and therefore switches the header off
+(`jeap.reaction.observer.header.enabled: false`). A service that does not name its operations is still shown: the
+caller names the operation itself, by the host and the context the call went to and the method, e.g.
+`//localhost/jme-ros-external GET /{*}`.
 
-Once REST calls are observed, an HTTP operation is named by the service providing it: `jme-ros-partner-service POST
-/api/partners/{}/credit-reservations`. A service that does not name its operations to its callers, like
-`jme-ros-external`, will still be shown: the caller names the operation itself, by the host and the context the
-call went to and the method, e.g. `//localhost/jme-ros-external GET /{*}`.
+A call that fails is not an action: a call without a response, or with a status of 500 or above from a service
+that does not name its operation. The reaction of that execution is not reported at all, so that operational
+failures do not show up as reactions of their own. In the demo system this is the order with
+`simulateSlowRating`. The order with `simulateFailedReservation` is reported: the partner service answers `500`,
+but names its operation. The order service counts the calls not named by their provider and the calls that did
+not become an action in the metrics `jeap_reaction_observer_unidentified_http_calls_total` and
+`jeap_reaction_observer_dropped_http_calls_total`.
+
+The Reaction Observer Service serves its graphs in two versions. The API v2 (`/api/v2/graphs/**`) shows every
+kind of interface a reaction has, e.g. the HTTP operations it calls. The API v1 (`/api/graphs/**`) shows messages
+only: the two reactions checking an order look alike there.
 
 ### Running the demo
 

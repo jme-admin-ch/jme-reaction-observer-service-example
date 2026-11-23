@@ -5,6 +5,19 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres
 to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [13.37.0] - 2026-11-23
+
+### Changed
+
+- The demo system observes by reaction model version 2: the Reaction Observer Service shows the REST calls of the
+  order service as HTTP operations. See the README for details.
+
+### Dependencies
+- **ch.admin.bit.jeap:jeap-reaction-observer-service-instance**: 12.24.0 → 12.25.0 (minor)
+- **ch.admin.bit.jeap:jeap-reaction-observer-service-test**: 12.24.0 → 12.25.0 (minor)
+- **ch.admin.bit.jeap.jme:jme-spring-boot-integration-test**: 8.12.0 → 8.14.0 (minor)
+- **ch.admin.bit.jeap:jeap-oauth-mock-server**: 11.19.0 → 11.20.0 (minor)
+
 ## [13.36.0] - 2026-11-23
 
 ### Dependencies

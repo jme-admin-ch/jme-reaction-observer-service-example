@@ -46,10 +46,12 @@ import static org.awaitility.Awaitility.await;
  *     event), the requests every called endpoint has answered (per status), and which orders have reserved credit
  *     (credit reserved event).</li>
  *     <li>What the Reaction Observer Service sees of the resulting chains. The order service and the partner service
- *     observe by reaction model version 2: next to the messages, the Reaction Observer Service sees the REST calls of
- *     the order service as actions. A call is named by the called service if it names its operations in the response
- *     header (partner service, product catalog, price service), and by the order service itself, by host, context and
- *     method, if it does not (external credit rating). Incoming REST requests are not observed as triggers yet.</li>
+ *     observe by reaction model version 2: next to the messages, the Reaction Observer Service sees the incoming REST
+ *     requests of these services as triggers and the REST calls of the order service as actions. A call is named by
+ *     the called service if it names its operations in the response header (partner service, product catalog, price
+ *     service), and by the order service itself, by host, context and method, if it does not (external credit
+ *     rating). The partner service names the trigger of a credit reservation as it names the operation to the order
+ *     service, so the chain continues across the REST call.</li>
  * </ol>
  * What the Reaction Observer Service sees is read through both versions of its graph API: the API v2 shows every kind
  * of interface, the API v1 messages only.
@@ -93,19 +95,24 @@ class DemoSystemIT extends BootServiceSpringIntegrationTestBase {
     private static final String CREDIT_RESERVATION_OPERATION = PARTNER_SERVICE + " POST /api/partners/{}/credit-reservations";
     private static final String RATING_TARGET = "//localhost/" + EXTERNAL;
     private static final String RATING_OPERATION = RATING_TARGET + " GET /{*}";
+    // The start endpoint of the order service, observed as a trigger: named like the order service would name it to a
+    // caller
+    private static final String ORDER_ENDPOINT = ORDER_SERVICE + " POST /api/orders";
 
-    // The reactions of the order service: it publishes the order submitted event without trigger (the start endpoint
-    // is not observed), and it checks a submitted order without and with the external credit rating
-    private static final String ORDER_SUBMISSION = reaction(null, ORDER_SUBMITTED);
+    // The reactions of the order service: its start endpoint publishes the order submitted event, and it checks a
+    // submitted order without and with the external credit rating
+    private static final String ORDER_SUBMISSION = reaction(ORDER_ENDPOINT, ORDER_SUBMITTED);
     private static final String ORDER_CHECK = reaction(ORDER_SUBMITTED,
             ORDER_CHECKED, PRODUCT_OPERATION, PRICE_OPERATION, CREDIT_RESERVATION_OPERATION);
     private static final String ORDER_CHECK_WITH_RATING = reaction(ORDER_SUBMITTED,
             ORDER_CHECKED, PRODUCT_OPERATION, PRICE_OPERATION, CREDIT_RESERVATION_OPERATION, RATING_OPERATION);
-    // The API v1 shows messages only: the two ways to check an order look alike
+    // The reaction of the partner service: the operation the order service calls publishes the credit reserved event
+    private static final String CREDIT_RESERVATION = reaction(CREDIT_RESERVATION_OPERATION, CREDIT_RESERVED);
+    // The API v1 shows messages only: the reactions triggered by a REST request have no trigger there, and the two
+    // ways to check an order look alike
+    private static final String ORDER_SUBMISSION_MESSAGES_ONLY = reaction(null, ORDER_SUBMITTED);
     private static final String ORDER_CHECK_MESSAGES_ONLY = reaction(ORDER_SUBMITTED, ORDER_CHECKED);
-    // The reaction of the partner service: it publishes the credit reserved event without trigger (REST requests are
-    // not observed as triggers yet)
-    private static final String CREDIT_RESERVATION = reaction(null, CREDIT_RESERVED);
+    private static final String CREDIT_RESERVATION_MESSAGES_ONLY = reaction(null, CREDIT_RESERVED);
 
     // How long an event that must not arrive is waited for
     private static final Duration NO_EVENT_HOLD_TIME = Duration.ofSeconds(10);
@@ -236,12 +243,13 @@ class DemoSystemIT extends BootServiceSpringIntegrationTestBase {
         await().atMost(Duration.ofMinutes(2)).pollInterval(Duration.ofSeconds(3))
                 .untilAsserted(this::assertReactionObserverServiceSeesTheMessagesAndRestCallsOfTheChains);
 
-        // and: the check of the order with the credit rating without response has not been counted as a reaction
-        assertCheckOfTheOrderWithoutRatingResponseIsNotCounted();
+        // and: neither the check of the order with the credit rating without response nor the failed (500) and the
+        // rejected (409) credit reservation has been counted as a reaction
+        assertFailedAndRejectedExecutionsAreNotCounted();
 
-        // and: the index of the interfaces of the API v2 leads to the graph of an event and of an HTTP operation
-        assertIndexOfInterfacesLeadsToTheGraphOfTheOrderSubmittedEvent();
-        assertIndexOfInterfacesLeadsToTheGraphOfTheCreditReservationOperation();
+        // and: the index of the interfaces of the API v2 leads along the whole chain, from the start endpoint of the
+        // order service to the credit reserved event of the partner service
+        assertIndexOfInterfacesLeadsAlongTheWholeChain();
 
         // and: the services without the library report no reactions of their own: they are no components
         assertThat(getComponentNames()).doesNotContain(HEADER_ONLY, NO_MESSAGING, EXTERNAL);
@@ -250,15 +258,16 @@ class DemoSystemIT extends BootServiceSpringIntegrationTestBase {
     /**
      * Aggregates the observations of today and verifies what the Reaction Observer Service sees:
      * <ul>
-     * <li>the order service: publishing the order submitted event without trigger (the start endpoint is not
-     * observed), and checking a submitted order - the order checked event and the REST calls to the product
-     * catalog, the price service and the partner service, and for orders from CHF 1000 the call of the external
-     * credit rating in a reaction of its own</li>
-     * <li>the partner service: publishing the credit reserved event without trigger (REST requests are not
-     * observed as triggers yet)</li>
+     * <li>the order service: its start endpoint publishing the order submitted event, and checking a submitted
+     * order - the order checked event and the REST calls to the product catalog, the price service and the partner
+     * service, and for orders from CHF 1000 the call of the external credit rating in a reaction of its own</li>
+     * <li>the partner service: the credit reservation, the operation the order service calls, publishing the credit
+     * reserved event. The rejected reservation (409) caused nothing, so it is no reaction of its own; the failed
+     * reservation (500) is not counted, see {@link #assertFailedAndRejectedExecutionsAreNotCounted()}.</li>
      * </ul>
-     * The API v2 shows the REST calls as HTTP operations. The API v1 shows the same reactions with their messages
-     * only. The reaction model version of a reaction is not verified: the API v2 does not derive it yet.
+     * The API v2 shows the REST requests and calls as HTTP operations. The API v1 shows the same reactions with their
+     * messages only: the reactions triggered by a REST request have no trigger there. The reaction model version of a
+     * reaction is not verified: the API v2 does not derive it yet.
      */
     private void assertReactionObserverServiceSeesTheMessagesAndRestCallsOfTheChains() {
         triggerAggregation(LocalDate.now().toString());
@@ -270,64 +279,82 @@ class DemoSystemIT extends BootServiceSpringIntegrationTestBase {
         assertThat(ReactionGraphs.ofApiV2(graphOfPartnerService)).containsExactly(CREDIT_RESERVATION);
 
         // The called service is the provider of an HTTP operation it has named itself; the operation the order
-        // service has named is provided by "the target", i.e. the host and the context of the call
+        // service has named is provided by "the target", i.e. the host and the context of the call. The start
+        // endpoint of the order service and the credit reservation of the partner service are triggers, the latter
+        // the same HTTP operation as the one the order service calls.
         assertThat(ReactionGraphs.httpOperationsOfApiV2(graphOfOrderService)).containsExactlyInAnyOrder(
+                "provider=" + ORDER_SERVICE + ", method=POST, path=/api/orders",
                 "provider=" + HEADER_ONLY + ", method=GET, path=/api/products/{}",
                 "provider=" + NO_MESSAGING + ", method=GET, path=/api/prices/{}",
                 "provider=" + PARTNER_SERVICE + ", method=POST, path=/api/partners/{}/credit-reservations",
                 "provider=" + RATING_TARGET + ", method=GET, path=/{*}");
-        assertThat(ReactionGraphs.httpOperationsOfApiV2(graphOfPartnerService)).isEmpty();
+        assertThat(ReactionGraphs.httpOperationsOfApiV2(graphOfPartnerService)).containsExactly(
+                "provider=" + PARTNER_SERVICE + ", method=POST, path=/api/partners/{}/credit-reservations");
 
         assertThat(reactionsOf(ORDER_SERVICE)).containsExactlyInAnyOrder(
-                ORDER_SUBMISSION, ORDER_CHECK_MESSAGES_ONLY, ORDER_CHECK_MESSAGES_ONLY);
-        assertThat(reactionsOf(PARTNER_SERVICE)).containsExactly(CREDIT_RESERVATION);
+                ORDER_SUBMISSION_MESSAGES_ONLY, ORDER_CHECK_MESSAGES_ONLY, ORDER_CHECK_MESSAGES_ONLY);
+        assertThat(reactionsOf(PARTNER_SERVICE)).containsExactly(CREDIT_RESERVATION_MESSAGES_ONLY);
     }
 
     /**
-     * Verifies that the check of the order with the credit rating without response is not counted as a reaction.
-     * The order service still calls the other services and publishes the order checked event for that order: were
-     * its check reported without the failed call, it would be the reaction checking an order without the credit
-     * rating. That reaction is in the graph anyway, so only its count tells: two orders are checked without the
-     * credit rating (the first demo case, submitted twice) and three with it.
-     * <p>
+     * Verifies that executions that failed or were rejected without an action are not counted as reactions:
+     * <ul>
+     * <li>The check of the order with the credit rating without response. The order service still calls the other
+     * services and publishes the order checked event for that order: were its check reported without the failed
+     * call, it would be the reaction checking an order without the credit rating. That reaction is in the graph
+     * anyway, so only its count tells: two orders are checked without the credit rating (the first demo case,
+     * submitted twice) and three with it.</li>
+     * <li>The failed credit reservation (500). The partner service has written the credit reserved event to the
+     * outbox before it failed: were the request counted, it would be the reaction of the successful reservations.
+     * That reaction is in the graph anyway, so only its count tells: four reservations have succeeded. The rejected
+     * reservation (409) caused nothing: had it been counted, the partner service would have a reaction with the
+     * trigger only, which {@link #assertReactionObserverServiceSeesTheMessagesAndRestCallsOfTheChains()} excludes.
+     * </li>
+     * </ul>
      * The counts are upper bounds: the Reaction Observer Service discards the counts of a reaction it does not know
      * yet, see {@link #awaitReactionObserverServiceKnowsThePublishingServices()}, so a count can be too low, but
      * never too high. All counts have been reported by now: every order has been checked more than
-     * {@link #NO_EVENT_HOLD_TIME} ago, several reporting periods of the order service.
+     * {@link #NO_EVENT_HOLD_TIME} ago, several reporting periods of the order service and the partner service.
+     * A lost count can hide an execution counted by mistake: this test shows that the demo system is observed as
+     * expected, the rule itself is verified by the integration tests of the Reaction Observer Library.
      */
-    private void assertCheckOfTheOrderWithoutRatingResponseIsNotCounted() {
+    private void assertFailedAndRejectedExecutionsAreNotCounted() {
         triggerAggregation(LocalDate.now().toString());
 
         assertThat(ReactionGraphs.mediansOfApiV2(graphOfApiV2(ORDER_SERVICE)))
                 .hasEntrySatisfying(ORDER_CHECK, count -> assertThat(count).isLessThanOrEqualTo(2))
                 .hasEntrySatisfying(ORDER_CHECK_WITH_RATING, count -> assertThat(count).isLessThanOrEqualTo(3));
+        assertThat(ReactionGraphs.mediansOfApiV2(graphOfApiV2(PARTNER_SERVICE)))
+                .hasEntrySatisfying(CREDIT_RESERVATION, count -> assertThat(count).isLessThanOrEqualTo(4));
     }
 
     /**
-     * Verifies that the index of the interfaces of the API v2 lists the events, and that the path of the order
-     * submitted event leads to its graph: the reaction publishing the event and the reaction to it, both of the
-     * order service.
+     * Verifies that the index of the interfaces of the API v2 lists the events and HTTP operations of the demo
+     * system, and that their paths lead along the whole chain of an order, each to the graph of the interface:
+     * <ol>
+     * <li>the start endpoint of the order service: the reaction publishing the order submitted event</li>
+     * <li>the order submitted event: the reaction publishing it and the reactions to it, all of the order
+     * service</li>
+     * <li>the credit reservation: the two reactions of the order service calling it, and the reaction of the partner
+     * service it triggers - the chain continues across the REST call</li>
+     * <li>the credit reserved event: the reaction of the partner service publishing it</li>
+     * </ol>
+     * The index covers the whole Reaction Observer Service and may list the interfaces of other tests, too: that the
+     * services of the demo system call no other operations is verified on their graphs.
      */
-    private void assertIndexOfInterfacesLeadsToTheGraphOfTheOrderSubmittedEvent() {
+    private void assertIndexOfInterfacesLeadsAlongTheWholeChain() {
         Map<String, String> pathsOfEvents = pathsOfInterfaces("event");
+        Map<String, String> pathsOfHttpOperations = pathsOfInterfaces("http_request");
         assertThat(pathsOfEvents).containsKeys(ORDER_SUBMITTED, ORDER_CHECKED, CREDIT_RESERVED);
+        assertThat(pathsOfHttpOperations).containsKeys(
+                ORDER_ENDPOINT, PRODUCT_OPERATION, PRICE_OPERATION, CREDIT_RESERVATION_OPERATION, RATING_OPERATION);
+
+        assertThat(reactionsAt(pathsOfHttpOperations.get(ORDER_ENDPOINT))).containsExactly(ORDER_SUBMISSION);
         assertThat(reactionsAt(pathsOfEvents.get(ORDER_SUBMITTED))).containsExactlyInAnyOrder(
                 ORDER_SUBMISSION, ORDER_CHECK, ORDER_CHECK_WITH_RATING);
-    }
-
-    /**
-     * Verifies that the index of the interfaces of the API v2 lists the HTTP operations the order service calls,
-     * and that the path of the credit reservation leads to its graph: the two reactions of the order service
-     * calling it. The partner service providing the operation does not appear, because incoming REST requests are
-     * not observed as triggers yet. The index covers the whole Reaction Observer Service and may list the HTTP
-     * operations of other tests, too: that the order service calls no other operations is verified on its graph.
-     */
-    private void assertIndexOfInterfacesLeadsToTheGraphOfTheCreditReservationOperation() {
-        Map<String, String> pathsOfHttpOperations = pathsOfInterfaces("http_request");
-        assertThat(pathsOfHttpOperations).containsKeys(
-                PRODUCT_OPERATION, PRICE_OPERATION, CREDIT_RESERVATION_OPERATION, RATING_OPERATION);
         assertThat(reactionsAt(pathsOfHttpOperations.get(CREDIT_RESERVATION_OPERATION))).containsExactlyInAnyOrder(
-                ORDER_CHECK, ORDER_CHECK_WITH_RATING);
+                ORDER_CHECK, ORDER_CHECK_WITH_RATING, CREDIT_RESERVATION);
+        assertThat(reactionsAt(pathsOfEvents.get(CREDIT_RESERVED))).containsExactly(CREDIT_RESERVATION);
     }
 
     /**
@@ -341,9 +368,10 @@ class DemoSystemIT extends BootServiceSpringIntegrationTestBase {
      * The service can only be asked for the components it knows, not for single reactions, but that is enough for the
      * four reactions of this test:
      * <ul>
-     * <li>Publishing the order submitted event is the first reaction the order service identifies, so it is stored as
-     * soon as the order service is known.</li>
-     * <li>Publishing the credit reserved event is the only reaction of the partner service.</li>
+     * <li>The start endpoint publishing the order submitted event is the first reaction the order service identifies,
+     * so it is stored as soon as the order service is known.</li>
+     * <li>The credit reservation publishing the credit reserved event is the only reaction of the partner service:
+     * the rejected and the failed reservation are not counted and therefore not identified either.</li>
      * <li>Checking an order without the credit rating cannot have all its counts in one report: only the first demo
      * case is checked this way, which is why the test submits it once more at the end. The orders are checked one
      * after the other, with the order with the slow rating in between. That order takes the whole read timeout, which

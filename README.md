@@ -4,10 +4,10 @@ This example shows how to set up and run an instance of the jEAP Reaction Observ
 
 The [jEAP Reaction Observer Library](https://github.com/jeap-admin-ch/jeap-reaction-observer) runs inside
 each microservice of a business application and publishes events describing how the service reacted to an
-incoming message (which messages it produced in response to a consumed message). This Reaction Observer
-Service instance consumes those events, aggregates them into a queryable model, and exposes them through a
-REST API so that other jEAP components (for example the Architecture Repository) can render the observed
-system behaviour.
+incoming message or REST request (which messages it produced and which REST calls it made in response). This
+Reaction Observer Service instance consumes those events, aggregates them into a queryable model, and exposes
+them through a REST API so that other jEAP components (for example the Architecture Repository) can render the
+observed system behaviour.
 
 It contains the following modules:
 
@@ -150,29 +150,40 @@ events are defined in the [JME message type registry](https://github.com/jme-adm
 ### What the Reaction Observer Service sees
 
 The order service and the partner service observe by reaction model version 2 of the Reaction Observer Library
-(`jeap.reaction.observer.model-version: 2`): next to the messages, the outgoing REST calls of a service are
-observed as actions. Incoming REST requests are not observed as triggers yet. The Reaction Observer Service
-therefore sees:
+(`jeap.reaction.observer.model-version: 2`): next to the messages, the incoming REST requests of a service are
+observed as triggers, and its outgoing REST calls as actions. The Reaction Observer Service therefore sees:
 
-* `jme-ros-order-service`: publishes `JmeRosOrderSubmittedEvent` without trigger (the start endpoint is not
-  observed) and reacts to `JmeRosOrderSubmittedEvent` with `JmeRosOrderCheckedEvent` and the REST calls to the
-  product catalog, the price service and the partner service. For an order from CHF 1000 the call of the external
-  credit rating belongs to the reaction, too: checking an order shows up as two reactions, without and with the
-  credit rating.
-* `jme-ros-partner-service`: publishes `JmeRosCreditReservedEvent` without trigger (REST requests are not
-  observed as triggers yet).
+* `jme-ros-order-service`: reacts to a request to its start endpoint `POST /api/orders` with
+  `JmeRosOrderSubmittedEvent`, and to `JmeRosOrderSubmittedEvent` with `JmeRosOrderCheckedEvent` and the REST
+  calls to the product catalog, the price service and the partner service. For an order from CHF 1000 the call of
+  the external credit rating belongs to the reaction, too: checking an order shows up as two reactions, without and
+  with the credit rating.
+* `jme-ros-partner-service`: reacts to a request to `POST /api/partners/{partnerId}/credit-reservations` with
+  `JmeRosCreditReservedEvent`. This is the HTTP operation the order service calls, so the chain of an order
+  continues across the REST call: start endpoint → `JmeRosOrderSubmittedEvent` → order check → credit reservation
+  → `JmeRosCreditReservedEvent`.
 * `jme-ros-header-only`, `jme-ros-no-messaging` and `jme-ros-external` report no reactions of their own. They
   appear as the providers of the HTTP operations the order service calls. The call of the price service to the
   product catalog is not seen: the price service does not have the library.
+
+A request counts as a reaction if it has been handled successfully: always with a status below 400, with a status
+of 400 to 499 only if it caused at least one action (a message or a call), never with a status of 500 or above.
+In the demo system, the partner service therefore does not count the order over the credit limit: it answers
+`409` without writing anything. Nor does it count the order with `simulateFailedReservation`: it answers `500`,
+and the credit reserved event it had written to the transactional outbox is rolled back. The order service still
+counts its call of the partner service in both cases, see below. Requests the library does not observe as triggers,
+e.g. those to Actuator or Swagger UI, are described in the documentation of the
+[jEAP Reaction Observer Library](https://github.com/jeap-admin-ch/jeap-reaction-observer).
 
 An HTTP operation is named by the service providing it: `jme-ros-partner-service POST
 /api/partners/{}/credit-reservations`. The partner service, the product catalog and the price service name their
 operations to their callers in the response header `JEAP-REACTION-OBSERVATION`, set by the module
 `jeap-reaction-observer-header-starter`. The jEAP parent brings this module to every service; a service does not
-have to add it. `jme-ros-external` stands for a system outside of jEAP and therefore switches the header off
-(`jeap.reaction.observer.header.enabled: false`). A service that does not name its operations is still shown: the
-caller names the operation itself, by the host and the context the call went to and the method, e.g.
-`//localhost/jme-ros-external GET /{*}`.
+have to add it. A service with the library names the triggers of its requests by the same name, so that the
+caller's action and the provider's trigger are the same HTTP operation. `jme-ros-external` stands for a system
+outside of jEAP and therefore switches the header off (`jeap.reaction.observer.header.enabled: false`). A service
+that does not name its operations is still shown: the caller names the operation itself, by the host and the
+context the call went to and the method, e.g. `//localhost/jme-ros-external GET /{*}`.
 
 A call that fails is not an action: a call without a response, or with a status of 500 or above from a service
 that does not name its operation. The reaction of that execution is not reported at all, so that operational
@@ -183,8 +194,9 @@ not become an action in the metrics `jeap_reaction_observer_unidentified_http_ca
 `jeap_reaction_observer_dropped_http_calls_total`.
 
 The Reaction Observer Service serves its graphs in two versions. The API v2 (`/api/v2/graphs/**`) shows every
-kind of interface a reaction has, e.g. the HTTP operations it calls. The API v1 (`/api/graphs/**`) shows messages
-only: the two reactions checking an order look alike there.
+kind of interface a reaction has, e.g. the HTTP operations that trigger it and that it calls. The API v1
+(`/api/graphs/**`) shows messages only: a reaction triggered by a REST request is shown there without trigger, and
+the two reactions checking an order look alike.
 
 ### Running the demo
 
@@ -235,6 +247,11 @@ curl -H "Authorization: Bearer $TOKEN" \
 curl -H "Authorization: Bearer $TOKEN" \
   http://localhost:8080/jme-reaction-observer-service/api/v2/graphs/interfaces
 ```
+
+The graph of the HTTP operation `jme-ros-partner-service POST /api/partners/{}/credit-reservations` shows where the
+chain of an order crosses the REST call: the reactions of the order service calling the operation, and the reaction
+of the partner service the operation triggers. Its path is in the index of the HTTP operations
+(`/api/v2/graphs/interfaces?interfaceType=http_request`).
 
 The Swagger UI of the Reaction Observer Service lists the API v2 in a group of its own.
 

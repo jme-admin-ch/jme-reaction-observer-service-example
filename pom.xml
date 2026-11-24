@@ -11,7 +11,7 @@
 
     <groupId>ch.admin.bit.jeap.jme.reactionobserver</groupId>
     <artifactId>jme-reaction-observer-service-example</artifactId>
-    <version>13.38.0-SNAPSHOT</version>
+    <version>13.39.0-SNAPSHOT</version>
     <packaging>pom</packaging>
     <name>JME Reaction Observer Service Example</name>
     <description>
@@ -43,10 +43,10 @@
         <jme-spring-boot-integration-test.version>8.14.0</jme-spring-boot-integration-test.version>
         <jeap-oauth-mock-server.version>11.20.0</jeap-oauth-mock-server.version>
         <maven.javadoc.skip>false</maven.javadoc.skip>
-        <!-- TEMPORARY (JEAP-7826): forces the jEAP Reaction Observer Library with reaction model version 2, which the
-             jEAP parent does not manage yet. Overrides the version managed by the jEAP parent. Remove once the jEAP
-             parent manages version 11.37.0 or later. -->
-        <jeap-reaction-observer.version>11.37.0</jeap-reaction-observer.version>
+        <!-- TEMPORARY (JEAP-7827): forces the jEAP Reaction Observer Library that observes incoming REST requests as
+             triggers, which the jEAP parent does not manage yet. Overrides the version managed by the jEAP parent.
+             Remove once the jEAP parent manages version 11.39.0 or later. -->
+        <jeap-reaction-observer.version>11.39.0</jeap-reaction-observer.version>
         <!-- Version of the JmeRos* message types of the demo system in the jme-message-type-registry -->
         <jme-ros-message-types.version>1.0.0</jme-ros-message-types.version>
     </properties>

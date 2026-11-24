@@ -5,6 +5,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres
 to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [13.39.0] - 2026-11-24
+
+### Changed
+
+- The demo system observes incoming REST requests as triggers: the Reaction Observer Service shows the whole chain
+  of an order, from the start endpoint of the order service across the credit reservation to the event of the
+  partner service. See the README for details.
+
 ## [13.38.0] - 2026-11-24
 
 ### Dependencies

@@ -110,14 +110,6 @@
                     </execution>
                 </executions>
             </plugin>
-            <!-- keep this module out of the bundle of the profile maven-central-publish -->
-            <plugin>
-                <groupId>ch.admin.bit.jeap</groupId>
-                <artifactId>jeap-central-publishing-maven-plugin</artifactId>
-                <configuration>
-                    <skipPublishing>true</skipPublishing>
-                </configuration>
-            </plugin>
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
